@@ -1,9 +1,10 @@
 import phonebook
-import notes
+from notes import Notes
 
 class BotCommands():
 
     done = False
+    notes = Notes()
 
     def input_validator(func):
         def inner(self, params):
@@ -68,21 +69,21 @@ class BotCommands():
 
     @input_validator
     def add_note_handler(self, params):
-        return notes.add_note(params[0], params[1])
+        return self.notes.add_note(params[0], params[1])
 
     def add_note_helper(self):
         return ['title', 'content']
 
     @input_validator
     def show_note_handler(self, params):
-        return notes.get_note(params[0])
+        return self.notes.get_note(params[0])
 
     def show_note_helper(self):
         return ['title']
 
     @input_validator
     def list_notes_handler(self, params):
-        return notes.list_all_notes()
+        return self.notes.list_all_notes()
 
     @input_validator
     def help_handler(self, params):
