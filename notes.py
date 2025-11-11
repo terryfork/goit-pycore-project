@@ -36,7 +36,6 @@ def notes_keeper():
             return f"Note '{title}' already exists"
     
     def get_note(title):
-        # Пошук нечутливий до регістру
         title_lower = title.lower()
         found_key = None
         for key in notes.keys():

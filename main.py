@@ -19,12 +19,9 @@ def main():
 def parse_input(line):
     words = line.split(" ")
     command = words.pop(0).lower()
-    # Нормалізуємо команду: замінюємо дефіси на підкреслення
     command = command.replace("-", "_")
     
-    # Для команд з нотатками, об'єднуємо все після першого параметра в контент
     if command == "add_note" and len(words) >= 2:
-        # Перший параметр - title, решта - content
         title = words[0]
         content = " ".join(words[1:])
         return command, [title, content]
