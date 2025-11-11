@@ -1,4 +1,5 @@
 import phonebook
+import notes
 
 class BotCommands():
 
@@ -12,7 +13,7 @@ class BotCommands():
             if helper_name in dir(self):
                 command_helper = getattr(self, helper_name)
                 command_params = command_helper()
-                if len(params) != len(command_params) + 1:
+                if len(params) != len(command_params):
                     return f"Usage: {command} <" + "> <".join(command_params) + ">"
             else:
                 if len(params) > 1:
@@ -64,6 +65,24 @@ class BotCommands():
     @input_validator
     def close_handler(self, params):
         return self.exit_handler(params)
+
+    @input_validator
+    def add_note_handler(self, params):
+        return notes.add_note(params[0], params[1])
+
+    def add_note_helper(self):
+        return ['title', 'content']
+
+    @input_validator
+    def show_note_handler(self, params):
+        return notes.get_note(params[0])
+
+    def show_note_helper(self):
+        return ['title']
+
+    @input_validator
+    def list_notes_handler(self, params):
+        return notes.list_all_notes()
 
     @input_validator
     def help_handler(self, params):
