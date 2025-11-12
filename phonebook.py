@@ -106,6 +106,11 @@ class Contact():
 
 
 class Phonebook():
+
+    phonebook = []
+    last_id = 0
+
+
     def __init__(self):
         self.storage_file = config.PHONEBOOK_STORAGE
         self.phonebook = self._load_from_file()
@@ -130,7 +135,10 @@ class Phonebook():
         dob = yield("Enter date of birthday(YYYY.MM.DD): ")
         addr = yield("Enter address: ")
         contact = Contact(name=name, phone=phone, email=email, dob=dob, addr=addr)
+        self.phonebook.append(contact)
+        self.last_id = len(self.phonebook)
         return "Contact added"
+
 
     def change_contact(self, name, phone):
 #TODO

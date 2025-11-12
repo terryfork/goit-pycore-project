@@ -25,7 +25,7 @@ def main():
                 print(result)
         else:
             possible_commands = command_processor.find_similar(command)
-            suggest = "Did you mean " + Fore.RED + " or ".join(possible_commands) + Style.RESET_ALL + "? " if possible_commands else ""
+            suggest = "Did you mean "+ Fore.RED + (Style.RESET_ALL + " or " + Fore.RED).join(possible_commands) + Style.RESET_ALL + "? " if possible_commands else ""
             print(f"Command not recognized. {suggest}Type 'help' to print available commands")
 
 
