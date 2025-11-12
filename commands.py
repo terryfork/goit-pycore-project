@@ -36,10 +36,7 @@ class BotCommands():
             else:
                 if len(params) > 1:
                     return f"Usage: {command}"
-            try:
-                return func(self, params)
-            except Exception as e:
-                return f"Really unexpected error occurred: {e}"
+            return func(self, params)
         return inner
 
 
@@ -49,13 +46,12 @@ class BotCommands():
 
     @input_validator
     def add_contact_handler(self, params):
-        return self.phonebook.add_contact(params[0], params[1])
+        return self.phonebook.add_contact(params[0])
 
     def add_contact_helper(self):
         return {
             'help' : "'add_contact' command: add new entry into phonebook",
             'name' : None,
-            'phone': Contact.phone_validator,
         }
 
     @input_validator
