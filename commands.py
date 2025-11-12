@@ -1,5 +1,6 @@
 from phonebook import Contact, Phonebook
 from notes import Notes
+from Levenshtein import distance
 
 class BotCommands():
 
@@ -100,7 +101,6 @@ class BotCommands():
         self.done = True
         return "Bye!"
 
-    @input_validator
     def close_handler(self, params):
         return self.exit_handler(params)
 
@@ -131,5 +131,15 @@ class BotCommands():
 
     @input_validator
     def help_handler(self, params):
-        all_commands = [func.replace("_handler", "") for func in dir(self) if func.endswith("_handler")]
+        all_commands = self.get_avail_commands()
         return "Available comands: " + " ".join(all_commands)
+
+    def get_avail_commands(self):
+        return [func.replace("_handler", "") for func in dir(self) if func.endswith("_handler")]
+
+    def find_similar(self, command):
+        all_commands = self.get_avail_commands()
+        similarity = {cmd : distance(command, cmd) for cmd in all_commands}
+        best_similarity = min(similarity.values())
+        return [cmd for cmd, sm in similarity.items() if sm == best_similarity]
+
