@@ -100,8 +100,8 @@ class BotCommands():
     def add_note_helper(self):
         return {
             'help' : "'add_note' command: add new note to notes",
-            'title' : None,
-            'content': None,
+            'title' : Notes.title_validator,
+            'content': Notes.content_validator,
         }
 
     @input_validator
@@ -111,7 +111,7 @@ class BotCommands():
     def show_note_helper(self):
         return {
             'help' : "'show_note' command: get note from notes by title",
-            'title' : None,
+            'title' : Notes.title_validator,
         }
 
     @input_validator
