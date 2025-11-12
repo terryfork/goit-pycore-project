@@ -1,4 +1,5 @@
 from commands import BotCommands
+from colorama import Fore, Style
 
 def main():
     print("Hello! This is CLI bot. Please enter command.")
@@ -13,7 +14,9 @@ def main():
             handler = getattr(command_processor, handler_name)
             print(handler(params))
         else:
-            print("Command not recognized. Type 'help' to print available commands")
+            possible_commands = command_processor.find_similar(command)
+            suggest = "Did you mean " + Fore.RED + " or ".join(possible_commands) + Style.RESET_ALL + "? " if possible_commands else ""
+            print(f"Command not recognized. {suggest}Type 'help' to print available commands")
 
 
 def parse_input(line):
