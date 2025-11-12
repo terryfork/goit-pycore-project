@@ -8,6 +8,20 @@ class Notes:
         self.storage_file = config.NOTES_STORAGE
         self.notes = self._load_from_file()
     
+    @staticmethod
+    def title_validator(title):
+        if not title or not title.strip():
+            return False
+        if len(title) > 100:
+            return False
+        return True
+    
+    @staticmethod
+    def content_validator(content):
+        if not content or not content.strip():
+            return False
+        return True
+    
     def _load_from_file(self):
         if Path(self.storage_file).exists():
             try:
