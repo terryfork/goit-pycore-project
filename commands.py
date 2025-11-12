@@ -14,8 +14,23 @@ class BotCommands():
             if helper_name in dir(self):
                 command_helper = getattr(self, helper_name)
                 command_params = command_helper()
-                if len(params) != len(command_params):
-                    return f"Usage: {command} <" + "> <".join(command_params) + ">"
+                params_validation = {}
+                help_string = ""
+                i = 0
+                for param_name, value in command_params.items():
+                    if param_name != 'help':
+                        if type(value) is func:
+                            params_validation[param_name] = value(params[i]) if len(params) > i else False
+                        else:
+                            params_validation[param_name] = True if len(params) > i else False
+                        i += 1
+                    else:
+                        help_string = value
+
+                validation_errors = [field for field, value in params_validation.items() if not value]
+                if validation_errors:
+                    error_in_fields = f"Invalid fields: " + " ".join(validation_errors)
+                    return f"{help_string}\nCommand usage: {command} <" + "> <".join(params_validation.keys()) + f">\n{error_in_fields}"
             else:
                 if len(params) > 1:
                     return f"Usage: {command}"
@@ -35,21 +50,32 @@ class BotCommands():
         return phonebook.add_phone(params[0], params[1])
 
     def add_helper(self):
-        return ['name', 'phone']
+        return {
+            'help' : "'add' command: adding new entry to phonebook",
+            'name' : None,
+            'phone': phonebook.phone_validator,
+        }
 
     @input_validator
     def change_handler(self, params):
         return phonebook.change_phone(params[0], params[1])
 
     def change_helper(self):
-        return ['name', 'phone']
+        return {
+            'help' : "'change' command: modifying existing entry in phonebook",
+            'name' : None,
+            'phone': phonebook.phone_validator,
+        }
 
     @input_validator
     def phone_handler(self, params):
         return phonebook.get_phone(params[0])
 
     def phone_helper(self):
-        return ['name']
+        return {
+            'help' : "'phone' command: get phone number by name from phonebook",
+            'name' : None,
+        }
 
     @input_validator
     def all_handler(self, params):
@@ -72,14 +98,21 @@ class BotCommands():
         return self.notes.add_note(params[0], params[1])
 
     def add_note_helper(self):
-        return ['title', 'content']
+        return {
+            'help' : "'add_note' command: add new note to notes",
+            'title' : None,
+            'content': None,
+        }
 
     @input_validator
     def show_note_handler(self, params):
         return self.notes.get_note(params[0])
 
     def show_note_helper(self):
-        return ['title']
+        return {
+            'help' : "'show_note' command: get note from notes by title",
+            'title' : None,
+        }
 
     @input_validator
     def list_notes_handler(self, params):
