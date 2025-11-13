@@ -10,9 +10,9 @@ class Contact:
         phone_number: str,
         email: Optional[str] = None,
         address: Optional[str] = None,
-        birthday_date: Optional[str] = None,
+        birthday: Optional[str] = None,
     ):
-        self.save(name, phone_number, email, address, birthday_date)
+        self.save(name, phone_number, email, address, birthday)
 
     def save(
         self,
@@ -20,14 +20,14 @@ class Contact:
         phone_number: str,
         email: Optional[str] = None,
         address: Optional[str] = None,
-        birthday_date: Optional[str] = None,
+        birthday: Optional[str] = None,
     ):
         self.name = Name(name)
         self.phone = Phone(phone_number)
         self.email = Email(email) if email is not None else None
         self.address = Address(address) if address is not None else None
-        if birthday_date is not None:
-            self.birthday = Birthday(birthday_date)
+        if birthday is not None:
+            self.birthday = Birthday(birthday)
         else:
             self.birthday = None
 
