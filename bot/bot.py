@@ -36,7 +36,8 @@ class Bot:
         return book.show_upcoming_birthday_in(days)
 
     def search_contact(args, book: ContactBook):
-        # args might contain several parameters, so we can search by name, phone, email as they should be unique.
-        # corresponding find_by_phone_number() find_by_email() should be implemented
+        # args might contain several parameters
+        # so we can search by name, phone, email as they should be unique.
+        # find_by_phone_number() find_by_email() should be implemented
         name = args[0]
         return book.find_contact_by_name(name)

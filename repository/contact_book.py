@@ -4,7 +4,7 @@ from models import Contact
 
 
 class ContactBook(UserDict):
-    
+
     def add_contact(self, contact: Contact):
         key = contact.name.value
         if key not in self.data:
@@ -26,12 +26,12 @@ class ContactBook(UserDict):
         contact = self.find_contact_by_name(name)
         if contact:
             contact.edit(phone_number, email, address, birthday)
-            #serialize the whole ContactBook
+            # serialize the whole ContactBook
 
     def delete_by_name(self, name: str):
         if name in self.data:
             self.data.pop(name)
-            #serialize the whole ContactBook
+            # serialize the whole ContactBook
 
     def show_upcoming_birthday_in(self, days: int):
         # to be implemented

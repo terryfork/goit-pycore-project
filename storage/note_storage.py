@@ -1,6 +1,7 @@
 import pickle
 from repository import NoteBook
 
+
 class NoteBookStorage:
     NOTE_BOOK_FILE_NAME = "notes.csv"
 
@@ -8,7 +9,7 @@ class NoteBookStorage:
     def save(cls, note_book: NoteBook):
         with open(cls.NOTE_BOOK_FILE_NAME, "wb") as f:
             pickle.dump(note_book, f)
-        
+
     @classmethod
     def load(cls) -> NoteBook:
         try:
