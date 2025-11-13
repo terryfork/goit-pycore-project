@@ -1,6 +1,7 @@
 from typing import Optional
 from collections import UserDict
 from models import Contact
+from datetime import datetime, timedelta
 
 
 class ContactBook(UserDict):
@@ -37,4 +38,52 @@ class ContactBook(UserDict):
         # to be implemented
         pass
 
+    def get_upcoming_birthdays(self, days: int) -> list:
+        upcoming_birthdays = []
+        today = datetime.today().date()
+        end_date = today + timedelta(days=days)
 
+        for contact in self.data.values():
+            # Get user birthday or skip if error
+            try:
+                birthday_date = datetime.strptime(
+                    str(contact.birthday),
+                    "%d.%m.%Y"
+                ).date()
+            except ValueError:
+                print(
+                    f"Error in date format for {contact.name}: "
+                    f"{contact.birthday}"
+                )
+                continue
+
+            # Transform in this year date
+            birthday_this_year = birthday_date.replace(year=today.year)
+
+            # Set next year for a passed birthday
+            if birthday_this_year < today:
+                birthday_this_year = birthday_date.replace(year=today.year + 1)
+
+            # Check if the birthday is in the upcoming 7 days
+            if today <= birthday_this_year < end_date:
+                congratulation_date = birthday_this_year
+
+                # In case of skipping the weekends:
+                # day_of_week = birthday_this_year.weekday()
+                # if day_of_week == 5:
+                #     congratulation_date = (
+                #         birthday_this_year
+                #         + timedelta(days=2)
+                #     )
+                # elif day_of_week == 6:
+                #     congratulation_date = (
+                #         birthday_this_year
+                #         + timedelta(days=1)
+                #     )
+
+                upcoming_birthdays.append({
+                    "name": contact.name, "congratulation_date":
+                    congratulation_date.strftime("%d.%m.%Y")
+                })
+
+        return upcoming_birthdays

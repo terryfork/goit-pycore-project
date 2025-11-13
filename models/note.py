@@ -11,4 +11,3 @@ class Note:
 
     def remove_tag(self, tag: str):
         self.tags.discard(tag)
-
