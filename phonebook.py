@@ -1,6 +1,6 @@
 def phonebook_keeper():
 
-    phones={}
+    phones = {}
 
     def add_phone(name, phone):
         nonlocal phones
@@ -29,7 +29,9 @@ def phonebook_keeper():
 
     return add_phone, change_phone, get_phone, all_phones
 
+
 add_phone, change_phone, get_phone, all_phones = phonebook_keeper()
+
 
 def phone_validator(phone):
     return True

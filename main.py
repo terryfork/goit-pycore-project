@@ -1,6 +1,7 @@
 from commands import BotCommands
 from colorama import Fore, Style
 
+
 def main():
     print("Hello! This is CLI bot. Please enter command.")
     command_processor = BotCommands()
@@ -15,23 +16,31 @@ def main():
             print(handler(params))
         else:
             possible_commands = command_processor.find_similar(command)
-            suggest = "Did you mean " + Fore.RED + " or ".join(possible_commands) + Style.RESET_ALL + "? " if possible_commands else ""
-            print(f"Command not recognized. {suggest}Type 'help' to print available commands")
+            if possible_commands:
+                cmd_list = " or ".join(possible_commands)
+                suggest = (
+                    f"Did you mean {Fore.RED}{cmd_list}"
+                    f"{Style.RESET_ALL}? "
+                )
+            else:
+                suggest = ""
+            print(
+                f"Command not recognized. {suggest}"
+                f"Type 'help' to print available commands"
+            )
 
 
 def parse_input(line):
     params = []
     for i, block in enumerate(line.split('"')):
-        params += block.strip().split(" ") if not i % 2 else [block]
+        if not i % 2:
+            params += [p for p in block.strip().split(" ") if p]
+        else:
+            if block:
+                params.append(block)
 
     command = params.pop(0).lower()
     command = command.replace("-", "_")
-
-    if command == "add_note" and len(words) >= 2:
-        title = words[0]
-        content = " ".join(words[1:])
-        return command, [title, content]
-
     return command, params
 
 
