@@ -1,6 +1,7 @@
-from typing import Optional
+# contact_book/storage.py
 from collections import UserDict
 from models import Contact
+from typing import Optional
 from datetime import datetime, timedelta
 
 
@@ -11,7 +12,6 @@ class ContactBook(UserDict):
         if key not in self.data:
             self.data[key] = contact
             # serialize the whole ContactBook
-            # ContactBookStorage.save(self)
 
     def find_contact_by_name(self, name: str):
         return self.data.get(name)
@@ -34,11 +34,7 @@ class ContactBook(UserDict):
             self.data.pop(name)
             # serialize the whole ContactBook
 
-    def show_upcoming_birthday_in(self, days: int):
-        # to be implemented
-        pass
-
-    def get_upcoming_birthdays(self, days: int) -> list:
+    def show_upcoming_birthday_in(self, days: int) -> list:
         upcoming_birthdays = []
         today = datetime.today().date()
         end_date = today + timedelta(days=days)
@@ -67,20 +63,6 @@ class ContactBook(UserDict):
             # Check if the birthday is in the upcoming 7 days
             if today <= birthday_this_year < end_date:
                 congratulation_date = birthday_this_year
-
-                # In case of skipping the weekends:
-                # day_of_week = birthday_this_year.weekday()
-                # if day_of_week == 5:
-                #     congratulation_date = (
-                #         birthday_this_year
-                #         + timedelta(days=2)
-                #     )
-                # elif day_of_week == 6:
-                #     congratulation_date = (
-                #         birthday_this_year
-                #         + timedelta(days=1)
-                #     )
-
                 upcoming_birthdays.append({
                     "name": contact.name, "congratulation_date":
                     congratulation_date.strftime("%d.%m.%Y")

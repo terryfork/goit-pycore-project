@@ -2,7 +2,6 @@ from models import Note
 
 
 class NoteBook:
-    # should be serializable
 
     def __init__(self):
         self.notes = []
@@ -31,4 +30,3 @@ class NoteBook:
         for note in self.notes:
             if tag in note.tags:
                 return note
-

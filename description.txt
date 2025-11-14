@@ -1,0 +1,63 @@
+
+# models represnts entities
+models:
+    Contact
+        fileds:
+            phone_number: Phone
+            email: Email (optional)
+            address: Address (optional)
+            birthday: Birthday (optional)
+        methods:
+            edit()
+            # to consider setters
+
+    Note:
+        fields:
+            title = str
+            content = str
+            tags = set of str (optional)
+        methods:
+            add_tag()
+            remove_tag()
+
+# storage represetns objects that hold data
+storage:
+    ContactBook(UserDict):
+        methods:
+            add_contact()
+            find_contact_by_name()
+            edit_contact()
+            delete_by_name()
+            show_upcoming_birthday_in()
+    
+    Note
+
+# repository represents persistance funcitonality
+repository:
+    ContactRepository
+        methods:
+            save()
+            load()
+
+# represents the work on entity through repo and storage
+service:
+    ContactService:
+        methods:
+            __init__() # loads ContactBook from file
+            add_contact()
+            edit_contact()
+            delete_contact()
+            show_upcoming_birthday_in()
+    NoteService:
+        methods:
+            __init__() # loads NoteBook from file
+            add_note()
+            # todo...
+    BotService:
+        methods:
+        __init__() # intializes ContactService() NoteService()
+         # contact related
+         # note related
+
+
+

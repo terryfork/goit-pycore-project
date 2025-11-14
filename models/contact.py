@@ -1,20 +1,15 @@
 from typing import Optional
 from fields import Name, Phone, Address, Email, Birthday
 
+# This class only holds the contact data, initialized through constructor 
+# with the ability to edit the whole data by edit()
+# To consider separate setter methods for the fields if there will be 
+# the functionality that allows changing a concrete field.
+
 
 class Contact:
     # Allows initialization with only name and phone number
     def __init__(
-        self,
-        name: str,
-        phone_number: str,
-        email: Optional[str] = None,
-        address: Optional[str] = None,
-        birthday: Optional[str] = None,
-    ):
-        self.save(name, phone_number, email, address, birthday)
-
-    def save(
         self,
         name: str,
         phone_number: str,
@@ -30,9 +25,6 @@ class Contact:
             self.birthday = Birthday(birthday)
         else:
             self.birthday = None
-
-    def find_by_name(self, name: str):
-        return self.name.value.lower() == name.lower()
 
     def edit(
         self,

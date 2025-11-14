@@ -1,4 +1,8 @@
 
+
+# This class only holds the note data, initialized through constructor 
+# with ability to edit the whole data by edit()
+
 class Note:
 
     def __init__(self, title: str, content: str, tags=None):
