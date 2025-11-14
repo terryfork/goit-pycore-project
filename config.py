@@ -8,4 +8,3 @@ JSON_INDENT = 2
 JSON_ENSURE_ASCII = False
 
 FILE_ENCODING = "utf-8"
-
