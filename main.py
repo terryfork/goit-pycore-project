@@ -26,12 +26,6 @@ def parse_input(line):
 
     command = params.pop(0).lower()
     command = command.replace("-", "_")
-
-    if command == "add_note" and len(words) >= 2:
-        title = words[0]
-        content = " ".join(words[1:])
-        return command, [title, content]
-
     return command, params
 
 

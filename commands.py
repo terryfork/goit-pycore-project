@@ -95,13 +95,23 @@ class BotCommands():
 
     @input_validator
     def add_note_handler(self, params):
-        return self.notes.add_note(params[0], params[1])
+
+        if len(params) < 2:
+            return "'add_note' command: add new note to notes\nCommand usage: add_note <title> <content>\nInvalid fields: content"
+        
+        title = params[0]
+        content = " ".join(params[1:])
+
+        if not Notes.content_validator(content):
+            return "'add_note' command: add new note to notes\nCommand usage: add_note <title> <content>\nInvalid fields: content"
+        
+        return self.notes.add_note(title, content)
 
     def add_note_helper(self):
         return {
             'help' : "'add_note' command: add new note to notes",
             'title' : Notes.title_validator,
-            'content': Notes.content_validator,
+            'content': None,
         }
 
     @input_validator
