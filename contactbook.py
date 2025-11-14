@@ -105,15 +105,16 @@ class Contact():
 
 
 
-class Phonebook():
+class Contactbook():
 
     phonebook = []
     last_id = 0
 
 
     def __init__(self):
-        self.storage_file = config.PHONEBOOK_STORAGE
-        self.phonebook = self._load_from_file()
+#        self.storage_file = config.PHONEBOOK_STORAGE
+#        self.phonebook = self._load_from_file()
+        pass
 
     def _load_from_file(self):
         if Path(self.storage_file).exists():
@@ -150,11 +151,14 @@ class Phonebook():
 
 
     def get_contact(self, name):
-#TODO
-        if name in self.phonebook:
-            return self.phonebook[name]
-        else:
-            return f"Entry {name} not found"
+        found = {}
+        for id, contact in enumerate(self.phonebook):
+            if contact.name == name:
+                found[id] = contact
+        if found:
+            return self.print_contacts(found)
+
+        return f"Contact {name} not found"
 
 
     def all_contacts(self):
@@ -176,3 +180,10 @@ class Phonebook():
         pass
 
 
+    def print_contacts(self, contacts):
+        txt = ""
+        for id, contact in contacts.items():
+            txt += f"{contact.name}\t{contact.dob.strftime('%Y.%m.%d')}\t{contact.email}\t{contact.phone}\t{contact.addr}\n"
+            self.last_id = id
+
+        return txt

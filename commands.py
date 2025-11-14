@@ -1,4 +1,4 @@
-from phonebook import Contact, Phonebook
+from contactbook import Contact, Contactbook
 from notes import Notes
 from Levenshtein import distance
 from colorama import Fore, Style
@@ -6,8 +6,10 @@ from colorama import Fore, Style
 class BotCommands():
 
     done = False
-    notes = Notes()
-    phonebook = Phonebook()
+
+    def __init__(self):
+        self.notes = Notes()
+        self.contactbook = Contactbook()
 
     def input_validator(func):
         def inner(self, params):
@@ -46,49 +48,49 @@ class BotCommands():
 
     @input_validator
     def add_contact_handler(self, params):
-        return self.phonebook.add_contact(params[0])
+        return self.contactbook.add_contact(params[0])
 
     def add_contact_helper(self):
         return {
-            'help' : "'add_contact' command: add new entry into phonebook",
+            'help' : "'add_contact' command: add new entry into contactbook",
             'name' : None,
         }
 
     @input_validator
     def change_contact_handler(self, params):
-        return self.phonebook.change_contact(params[0], params[1])
+        return self.contactbook.change_contact(params[0], params[1])
 
     def change_contact_helper(self):
         return {
-            'help' : "'change_contact' command: modify existing entry in phonebook",
+            'help' : "'change_contact' command: modify existing entry in contactbook",
             'name' : None,
             'phone': Contact.phone_validator,
         }
 
     @input_validator
     def get_contact_handler(self, params):
-        return self.phonebook.get_contact(params[0])
+        return self.contactbook.get_contact(params[0])
 
     def get_contact_helper(self):
         return {
-            'help' : "'get_contact' command: get contact from phonebook by name",
+            'help' : "'get_contact' command: get contact from contactbook by name",
             'name' : None,
         }
 
     @input_validator
     def del_contact_handler(self, params):
-        return self.phonebook.del_contact(params[0])
+        return self.contactbook.del_contact(params[0])
 
     def del_contact_helper(self):
         return {
-            'help' : "'del_contact' command: delete contact from phonebook by name",
+            'help' : "'del_contact' command: delete contact from contactbook by name",
             'name' : None,
         }
 
     @input_validator
     def all_contacts_handler(self, params):
         phone_list = ""
-        for name, phone in self.phonebook.all_contacts().items():
+        for name, phone in self.contactbook.all_contacts().items():
             phone_list += f"Name: {name}\tphone: {phone}\n"
         return phone_list
 
