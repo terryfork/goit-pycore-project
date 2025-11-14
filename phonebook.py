@@ -1,20 +1,39 @@
 import pickle
 from pathlib import Path
 import config
+from re import fullmatch, sub, match
+from datetime import datetime, date
 
 class Contact():
-#TODO
-    def phone_validator(phone):
-#TODO
-        return True
+    @staticmethod
+    def phone_validator(phone: str) -> bool:
+        if not isinstance(phone, str):
+            return False
+        cleaned = sub(r'[^\d+]', '', phone)
+        if cleaned.count('+') > 1:
+            return False
+        if '+' in cleaned and not cleaned.startswith('+'):
+            return False
+        return bool(match(config.PHONE_FORMAT, cleaned))
 
-    def email_validator(email):
-#TODO
-        return True
+    @staticmethod
+    def email_validator(email: str) -> bool:
+        if not isinstance(email, str):
+            return False
+        cleaned_email = email.strip().lower()
+        if not cleaned_email:
+            return False
+        return bool(fullmatch(config.EMAIL_FORMAT, cleaned_email))
 
-    def DOB_validator(dob):
-#TODO
-        return True
+    @staticmethod
+    def DOB_validator(dob: str) -> bool:
+        if not isinstance(dob, str):
+            return False
+        try:
+            birth_date = datetime.strptime(dob, config.DOB_FORMAT).date()
+            return birth_date <= date.today()
+        except (ValueError, AttributeError):
+            return False
 
 
 
