@@ -184,10 +184,34 @@ class Contactbook():
         pass
 
 
-    def get_birthdays(self, days):
-#TODO
-        pass
+    def get_birthdays(self, days: int) -> list[Contact]:
+        today = date.today()
+        list_of_birthday_people = []
 
+        for contact in self.phonebook.values():
+            dob = getattr(contact, "dob", None)
+            if not dob:
+                continue
+
+            birthday_this_year = self._safe_birthday(today.year, dob.month, dob.day)
+            if birthday_this_year is None:
+                continue
+
+            next_birthday = (self._safe_birthday(today.year + 1, dob.month, dob.day)
+                             if birthday_this_year < today
+                             else birthday_this_year)
+            if next_birthday and (next_birthday - today).days == days:
+                list_of_birthday_people.append(contact)
+
+        return list_of_birthday_people
+    
+    def _safe_birthday(self, year: int, month: int, day: int) -> date | None:
+        try:
+            return date(year, month, day)
+        except ValueError:
+            if month == 2 and day == 29:
+                return date(year, 2, 28)
+            return None
 
     def print_contacts(self, contacts):
         txt = ""
