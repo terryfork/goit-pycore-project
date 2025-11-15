@@ -1,19 +1,22 @@
-from phonebook import Contact, Phonebook
+from contactbook import Contact, Contactbook
 from notes import Notes
+from Levenshtein import distance
+from colorama import Fore, Style
 
 class BotCommands():
 
     done = False
-    notes = Notes()
-    phonebook = Phonebook()
+
+    def __init__(self):
+        self.notes = Notes()
+        self.contactbook = Contactbook()
 
     def input_validator(func):
         def inner(self, params):
             command = func.__name__.removesuffix('_handler')
             command_params = []
-            helper_name = command+"_helper"
-            if helper_name in dir(self):
-                command_helper = getattr(self, helper_name)
+            command_helper = self.get_helper(command)
+            if command_helper != None:
                 command_params = command_helper()
                 params_validation = {}
                 help_string = ""
@@ -35,10 +38,7 @@ class BotCommands():
             else:
                 if len(params) > 1:
                     return f"Usage: {command}"
-            try:
-                return func(self, params)
-            except Exception as e:
-                return f"Really unexpected error occurred: {e}"
+            return func(self, params)
         return inner
 
 
@@ -48,50 +48,49 @@ class BotCommands():
 
     @input_validator
     def add_contact_handler(self, params):
-        return self.phonebook.add_contact(params[0], params[1])
+        return self.contactbook.add_contact(params[0])
 
     def add_contact_helper(self):
         return {
-            'help' : "'add_contact' command: add new entry into phonebook",
+            'help' : "'add_contact' command: add new entry into contactbook",
             'name' : None,
-            'phone': Contact.phone_validator,
         }
 
     @input_validator
     def change_contact_handler(self, params):
-        return self.phonebook.change_contact(params[0], params[1])
+        return self.contactbook.change_contact(params[0], params[1])
 
     def change_contact_helper(self):
         return {
-            'help' : "'change_contact' command: modify existing entry in phonebook",
+            'help' : "'change_contact' command: modify existing entry in contactbook",
             'name' : None,
             'phone': Contact.phone_validator,
         }
 
     @input_validator
     def get_contact_handler(self, params):
-        return self.phonebook.get_contact(params[0])
+        return self.contactbook.get_contact(params[0])
 
     def get_contact_helper(self):
         return {
-            'help' : "'get_contact' command: get contact from phonebook by name",
+            'help' : "'get_contact' command: get contact from contactbook by name",
             'name' : None,
         }
 
     @input_validator
     def del_contact_handler(self, params):
-        return self.phonebook.del_contact(params[0])
+        return self.contactbook.del_contact(params[0])
 
     def del_contact_helper(self):
         return {
-            'help' : "'del_contact' command: delete contact from phonebook by name",
+            'help' : "'del_contact' command: delete contact from contactbook by name",
             'name' : None,
         }
 
     @input_validator
     def all_contacts_handler(self, params):
         phone_list = ""
-        for name, phone in self.phonebook.all_contacts().items():
+        for name, phone in self.contactbook.all_contacts().items():
             phone_list += f"Name: {name}\tphone: {phone}\n"
         return phone_list
 
@@ -100,18 +99,27 @@ class BotCommands():
         self.done = True
         return "Bye!"
 
-    @input_validator
     def close_handler(self, params):
         return self.exit_handler(params)
 
     @input_validator
     def add_note_handler(self, params):
-        return self.notes.add_note(params[0], params[1])
+
+        if len(params) < 2:
+            return "'add_note' command: add new note to notes\nCommand usage: add_note <title> <content>\nInvalid fields: content"
+        
+        title = params[0]
+        content = " ".join(params[1:])
+
+        if not Notes.content_validator(content):
+            return "'add_note' command: add new note to notes\nCommand usage: add_note <title> <content>\nInvalid fields: content"
+        
+        return self.notes.add_note(title, content)
 
     def add_note_helper(self):
         return {
             'help' : "'add_note' command: add new note to notes",
-            'title' : None,
+            'title' : Notes.title_validator,
             'content': None,
         }
 
@@ -122,7 +130,7 @@ class BotCommands():
     def show_note_helper(self):
         return {
             'help' : "'show_note' command: get note from notes by title",
-            'title' : None,
+            'title' : Notes.title_validator,
         }
 
     @input_validator
@@ -131,5 +139,35 @@ class BotCommands():
 
     @input_validator
     def help_handler(self, params):
-        all_commands = [func.replace("_handler", "") for func in dir(self) if func.endswith("_handler")]
-        return "Available comands: " + " ".join(all_commands)
+        all_commands = sorted(self.get_avail_commands())
+        help = {}
+        for command in all_commands:
+            helper = self.get_helper(command)
+            if helper != None:
+                params = helper()
+                help[command] = params['help'] if 'help' in params else ""
+            else:
+                help[command] = ""
+
+        txt = ""
+        for command, help_txt in help.items():
+            txt += f"    {Fore.RED}{command.ljust(20)}{Style.RESET_ALL}{help_txt}\n"
+        return f"Available comands:\n{txt}"
+
+    def get_avail_commands(self):
+        return [func.replace("_handler", "") for func in dir(self) if func.endswith("_handler")]
+
+    def get_helper(self, command):
+        helper_name = command + "_helper"
+        if helper_name in dir(self):
+            return getattr(self, helper_name)
+        return None
+
+    def find_similar(self, command):
+        all_commands = self.get_avail_commands()
+        similarity = {cmd : (1 if cmd.startswith(command) else (2 if command in cmd else distance(command, cmd))) for cmd in all_commands}
+        best_similarity = min(similarity.values())
+        if len(command) < best_similarity:
+            return []
+        return [cmd for cmd, sm in similarity.items() if sm == best_similarity]
+

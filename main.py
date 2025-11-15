@@ -1,4 +1,6 @@
 from commands import BotCommands
+from colorama import Fore, Style
+from typing import Generator
 
 def main():
     print("Hello! This is CLI bot. Please enter command.")
@@ -11,22 +13,30 @@ def main():
         handler_name = command+"_handler"
         if handler_name in dir(command_processor):
             handler = getattr(command_processor, handler_name)
-            print(handler(params))
+            result = handler(params)
+            if isinstance(result, Generator):
+                try:
+                    answ = next(result)
+                    while True:
+                        answ = result.send(input(answ))
+                except StopIteration as done:
+                    print(done)
+            else:
+                print(result)
         else:
-            print("Command not recognized. Type 'help' to print available commands")
+            possible_commands = command_processor.find_similar(command)
+            suggest = "Did you mean "+ Fore.RED + (Style.RESET_ALL + " or " + Fore.RED).join(possible_commands) + Style.RESET_ALL + "? " if possible_commands else ""
+            print(f"Command not recognized. {suggest}Type 'help' to print available commands")
 
 
 def parse_input(line):
-    words = line.split(" ")
-    command = words.pop(0).lower()
+    params = []
+    for i, block in enumerate(line.split('"')):
+        params += block.strip().split(" ") if not i % 2 else [block]
+
+    command = params.pop(0).lower()
     command = command.replace("-", "_")
-    
-    if command == "add_note" and len(words) >= 2:
-        title = words[0]
-        content = " ".join(words[1:])
-        return command, [title, content]
-    
-    return command, words
+    return command, params
 
 
 if __name__ == "__main__":
