@@ -1,6 +1,6 @@
 import pickle
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, date
 import config
 import re
 
@@ -23,20 +23,29 @@ class Contact():
     def addr_validator(phone):
         return True
 
-#TODO
     @staticmethod
-    def phone_validator(phone):
-        return True
+    def phone_validator(phone: str) -> bool:
+        cleaned = re.sub(r'[^\d+]', '', phone)
+        if cleaned.count('+') > 1:
+            return False
+        if '+' in cleaned and not cleaned.startswith('+'):
+            return False
+        return bool(re.match(config.PHONE_FORMAT, cleaned))
 
-#TODO
     @staticmethod
-    def email_validator(email):
-        return True
+    def email_validator(email: str) -> bool:
+        cleaned_email = email.strip().lower()
+        if not cleaned_email:
+            return False
+        return bool(re.fullmatch(config.EMAIL_FORMAT, cleaned_email))
 
-#TODO
     @staticmethod
-    def dob_validator(dob):
-        return True
+    def DOB_validator(dob: str) -> bool:
+        try:
+            birth_date = datetime.strptime(dob, config.DOB_FORMAT).date()
+            return birth_date <= date.today()
+        except (ValueError, AttributeError):
+            return False
 
 
     @staticmethod
@@ -175,10 +184,34 @@ class Contactbook():
         pass
 
 
-    def get_birthdays(self, days):
-#TODO
-        pass
+    def get_birthdays(self, days: int) -> list[Contact]:
+        today = date.today()
+        list_of_birthday_people = []
 
+        for contact in self.phonebook.values():
+            dob = getattr(contact, "dob", None)
+            if not dob:
+                continue
+
+            birthday_this_year = self._safe_birthday(today.year, dob.month, dob.day)
+            if birthday_this_year is None:
+                continue
+
+            next_birthday = (self._safe_birthday(today.year + 1, dob.month, dob.day)
+                             if birthday_this_year < today
+                             else birthday_this_year)
+            if next_birthday and (next_birthday - today).days <= days:
+                list_of_birthday_people.append(contact)
+
+        return list_of_birthday_people
+    
+    def _safe_birthday(self, year: int, month: int, day: int) -> date | None:
+        try:
+            return date(year, month, day)
+        except ValueError:
+            if month == 2 and day == 29:
+                return date(year, 2, 28)
+            return None
 
     def print_contacts(self, contacts):
         txt = ""
