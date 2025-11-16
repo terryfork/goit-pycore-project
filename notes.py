@@ -1,4 +1,5 @@
-import json
+import pickle
+from pickle import UnpicklingError
 from pathlib import Path
 from datetime import datetime
 import config
@@ -48,23 +49,15 @@ class Notes:
     def _load_from_file(self):
         if Path(self.storage_file).exists():
             try:
-                with open(
-                    self.storage_file, 'r', encoding=config.FILE_ENCODING
-                ) as f:
-                    return json.load(f)
-            except json.JSONDecodeError:
+                with open(self.storage_file, 'rb') as f:
+                    return pickle.load(f)
+            except (UnpicklingError, EOFError):
                 return {}
         return {}
 
     def _save_to_file(self):
-        with open(
-            self.storage_file, 'w', encoding=config.FILE_ENCODING
-        ) as f:
-            json.dump(
-                self.notes, f,
-                indent=config.JSON_INDENT,
-                ensure_ascii=config.JSON_ENSURE_ASCII
-            )
+        with open(self.storage_file, 'wb') as f:
+            pickle.dump(self.notes, f)
 
     def _migrate_notes(self):
         migrated = False

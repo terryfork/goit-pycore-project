@@ -1,5 +1,5 @@
 
-NOTES_STORAGE = "storage/notes.json"
+NOTES_STORAGE = "storage/notes.pkl"
 PHONEBOOK_STORAGE = "storage/phonebook.pkl"
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
