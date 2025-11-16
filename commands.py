@@ -1,4 +1,4 @@
-from contactbook import Contactbook, Contact
+from contactbook import Contactbook
 from notes import Notes
 from Levenshtein import distance
 from colorama import Fore, Style
