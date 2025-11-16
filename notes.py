@@ -25,14 +25,25 @@ class Notes:
         return True
 
     @staticmethod
+    def normalize_tags(tags_str):
+        if not tags_str or not tags_str.strip():
+            return []
+
+        tags = []
+        for part in tags_str.split(','):
+            tags.extend(
+                [tag.strip() for tag in part.split() if tag.strip()]
+            )
+
+        return [tag for tag in tags if tag and len(tag) <= 20]
+
+    @staticmethod
     def tags_validator(tags_str):
         if not tags_str or not tags_str.strip():
             return True
-        tags = [tag.strip() for tag in tags_str.split(',')]
-        return all(
-            tag and ' ' not in tag and len(tag) <= 20
-            for tag in tags
-        )
+
+        tags = Notes.normalize_tags(tags_str)
+        return all(tag and len(tag) <= 20 for tag in tags)
 
     def _load_from_file(self):
         if Path(self.storage_file).exists():
@@ -73,12 +84,8 @@ class Notes:
 
     def add_note(self, title, content, tags=""):
         if title not in self.notes:
-            if tags:
-                tags_list = [
-                    tag.strip() for tag in tags.split(',') if tag.strip()
-                ]
-            else:
-                tags_list = []
+            tags_list = self.normalize_tags(tags)
+
             self.notes[title] = {
                 "content": content,
                 "created": datetime.now().strftime(config.DATETIME_FORMAT),
@@ -89,6 +96,25 @@ class Notes:
             return "Note created successfully"
         else:
             return f"Note '{title}' already exists"
+
+    def add_note_interactive(self, title):
+        content = yield ("Enter note content: ")
+        tags = yield (
+            "Enter tags (separated by comma or space, "
+            "or press Enter to skip): "
+        )
+
+        if not self.content_validator(content):
+            return "Error: Invalid content format."
+
+        if tags and not self.tags_validator(tags):
+            msg = (
+                "Error: Invalid tags format. "
+                "Each tag must be <= 20 characters."
+            )
+            return msg
+
+        return self.add_note(title, content, tags)
 
     def get_note(self, title):
         found_key = self._find_note_key(title)
