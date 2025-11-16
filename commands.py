@@ -118,6 +118,20 @@ class BotCommands():
         }
 
     @input_validator
+    def search_contact_handler(self, params):
+        criteria = {}
+        for param in params:
+            if "=" in param:
+                key, value = param.split("=", 1)
+                criteria[key] = value
+        return self.contactbook.search_contacts(**criteria)
+
+    def search_contact_helper(self):
+        return {
+            'help': "search contacts by fields",
+        }
+
+    @input_validator
     def get_contact_handler(self, params):
         return self.contactbook.get_contact(params[0])
 

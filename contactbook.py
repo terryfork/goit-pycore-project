@@ -341,9 +341,34 @@ class Contactbook():
             return "Contact deleted"
         return "Operation canceled"
 
-    def search_contact(self, needle):
-        # TODO
-        pass
+    def search_contacts(self, **criteria):
+        if not criteria:
+            return "Please specify at least one search criteria."
+
+        found = {}
+        for contact_id, contact in self.storage.items():
+            match = True
+
+            for key, value in criteria.items():
+                if not hasattr(contact, key):
+                    match = False
+                    break
+
+                attr_value = getattr(contact, key)
+                attr_str = str(attr_value).lower()
+                value_str = str(value).lower()
+
+                if value_str not in attr_str:
+                    match = False
+                    break
+
+            if match:
+                found[contact_id] = contact
+
+        if not found:
+            return "No contacts found matching the given criteria."
+
+        return self.print_contacts(found)
 
     def upcoming_birthdays(self, days):
         found = self._get_birthdays(days)
