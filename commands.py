@@ -24,7 +24,7 @@ class BotCommands():
                 i = 0
                 for param_name, value in command_params.items():
                     if param_name != 'help':
-                        if type(value) is func:
+                        if callable(value):
                             params_validation[param_name] = (
                                 value(params[i]) if len(params) > i
                                 else False
@@ -119,21 +119,17 @@ class BotCommands():
 
     @input_validator
     def search_contact_handler(self, params):
-        if len(params) != 2:
-            return "Please use: search_contact <field> <value>"
-
         key = params[0]
-        valid_fields = {"name", "phone", "email", "address", "dob"}
-        if key not in valid_fields:
-            return f"Unknown field '{key}'. Allowed: {', '.join(valid_fields)}"
         value = params[1]
 
         return self.contactbook.search_contacts(key, value)
 
     def search_contact_helper(self):
         return {
-            'help': "search contacts by fields",
-        }
+                'help': "search contacts by fields",
+                'field': Contact.field_validator,
+                'value': None
+            }
 
     @input_validator
     def get_contact_handler(self, params):

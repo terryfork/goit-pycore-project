@@ -15,10 +15,15 @@ from config import (
 
 
 class Contact():
+    name: str
+    addr: str
+    email: str
+    phone: str
+    dob: datetime
+
     def __init__(self, **kwargs):
         self._data = {}
-        fields = ['name', 'addr', 'email', 'phone', 'dob']
-        for field in fields:
+        for field in Contact.__annotations__:
             if field in kwargs:
                 setattr(self, field, kwargs[field])
 
@@ -59,6 +64,10 @@ class Contact():
         pure = re.sub(r"[^\d]", "", phone)
         normalized = "+380"[0:13-len(pure)] + pure
         return normalized
+
+    @staticmethod
+    def field_validator(field):
+        return field in Contact.__annotations__
 
     @property
     def name(self):
