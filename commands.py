@@ -117,67 +117,8 @@ class BotCommands():
     def close_handler(self, params):
         return self.exit_handler(params)
 
-    def _add_note_fully_interactive(self):
-        title = yield ("Enter note title: ")
-        if not Notes.title_validator(title):
-            return "Error: Invalid title format."
-        content = yield ("Enter note content: ")
-        if not Notes.content_validator(content):
-            return "Error: Invalid content format."
-        tags = yield (
-            "Enter tags (separated by comma or space, "
-            "or press Enter to skip): "
-        )
-        if tags and not Notes.tags_validator(tags):
-            return "Error: Invalid tags format."
-        return self.notes.add_note(title, content, tags)
-
     def add_note_handler(self, params):
-        if len(params) == 0:
-            return self._add_note_fully_interactive()
-
-        if len(params) == 1:
-            if not Notes.title_validator(params[0]):
-                return "Error: Invalid title format."
-            return self.notes.add_note_interactive(params[0])
-
-        title = params[0]
-
-        if not Notes.title_validator(title):
-            msg = (
-                "'add_note' command: add new note to notes\n"
-                "Command usage: add_note [<title>] [<content>] [tags]\n"
-                "Invalid fields: title"
-            )
-            return msg
-
-        if len(params) == 3:
-            content = params[1]
-            tags = params[2]
-        elif len(params) >= 3 and ',' in params[-1]:
-            content = " ".join(params[1:-1])
-            tags = params[-1]
-        else:
-            content = " ".join(params[1:])
-            tags = ""
-
-        if not Notes.content_validator(content):
-            msg = (
-                "'add_note' command: add new note to notes\n"
-                "Command usage: add_note [<title>] [<content>] [tags]\n"
-                "Invalid fields: content"
-            )
-            return msg
-
-        if tags and not Notes.tags_validator(tags):
-            msg = (
-                "'add_note' command: add new note to notes\n"
-                "Command usage: add_note [<title>] [<content>] [tags]\n"
-                "Invalid fields: tags"
-            )
-            return msg
-
-        return self.notes.add_note(title, content, tags)
+        return self.notes.add_note_from_command(params)
 
     def add_note_helper(self):
         return {
@@ -209,36 +150,7 @@ class BotCommands():
 
     @input_validator
     def edit_note_handler(self, params):
-        if len(params) < 1:
-            msg = (
-                "'edit_note' command: edit existing note\n"
-                "Command usage: edit_note <title> [new_content] [new_tags]"
-            )
-            return msg
-
-        title = params[0]
-        new_content = params[1] if len(params) > 1 else None
-        new_tags = params[2] if len(params) > 2 else None
-
-        if new_content is not None:
-            if not Notes.content_validator(new_content):
-                msg = (
-                    "'edit_note' command: edit existing note\n"
-                    "Command usage: edit_note <title> [new_content] "
-                    "[new_tags]\n"
-                    "Invalid fields: new_content"
-                )
-                return msg
-
-        if new_tags is not None and not Notes.tags_validator(new_tags):
-            msg = (
-                "'edit_note' command: edit existing note\n"
-                "Command usage: edit_note <title> [new_content] [new_tags]\n"
-                "Invalid fields: new_tags"
-            )
-            return msg
-
-        return self.notes.edit_note(title, new_content, new_tags)
+        return self.notes.edit_note_from_command(params)
 
     def edit_note_helper(self):
         return {
@@ -258,25 +170,7 @@ class BotCommands():
 
     @input_validator
     def add_tags_handler(self, params):
-        if len(params) < 2:
-            msg = (
-                "'add_tags' command: add tags to note\n"
-                "Command usage: add_tags <title> <tags>"
-            )
-            return msg
-
-        title = params[0]
-        tags_str = " ".join(params[1:])
-
-        if not Notes.tags_validator(tags_str):
-            msg = (
-                "'add_tags' command: add tags to note\n"
-                "Command usage: add_tags <title> <tags>\n"
-                "Invalid fields: tags"
-            )
-            return msg
-
-        return self.notes.add_tags(title, tags_str)
+        return self.notes.add_tags_from_command(params)
 
     def add_tags_helper(self):
         return {
@@ -287,17 +181,7 @@ class BotCommands():
 
     @input_validator
     def remove_tags_handler(self, params):
-        if len(params) < 2:
-            msg = (
-                "'remove_tags' command: remove tags from note\n"
-                "Command usage: remove_tags <title> <tags>"
-            )
-            return msg
-
-        title = params[0]
-        tags_str = " ".join(params[1:])
-
-        return self.notes.remove_tags(title, tags_str)
+        return self.notes.remove_tags_from_command(params)
 
     def remove_tags_helper(self):
         return {
@@ -318,23 +202,7 @@ class BotCommands():
 
     @input_validator
     def search_by_tags_handler(self, params):
-        if len(params) < 1:
-            msg = (
-                "'search_by_tags' command: search notes by multiple tags\n"
-                "Command usage: search_by_tags <tags> [--all]"
-            )
-            return msg
-
-        match_all = False
-        tags_params = params
-
-        if '--all' in params:
-            match_all = True
-            tags_params = [p for p in params if p != '--all']
-
-        tags_str = " ".join(tags_params)
-
-        return self.notes.search_by_tags(tags_str, match_all)
+        return self.notes.search_by_tags_from_command(params)
 
     def search_by_tags_helper(self):
         return {
