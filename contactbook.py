@@ -5,9 +5,8 @@ import config
 import re
 
 class Contact():
-    _data = {}
-
     def __init__(self, **kwargs):
+        self._data = {}
         fields = ['name', 'addr', 'email', 'phone', 'dob']
         for field in fields:
             if field in kwargs:
@@ -136,9 +135,24 @@ class Contactbook():
 
 
     def add_contact(self, name):
-        phone = yield("Enter phone: ")
-        email = yield("Enter email: ")
-        dob = yield("Enter date of birthday(YYYY.MM.DD): ")
+        suggest = ""
+        while True:
+            phone = yield(f"{suggest}Enter phone: ")
+            if Contact.phone_validator(phone):
+                break
+            suggest = "Invalid phone format. Phone should by like +380987654321\n"
+        suggest = ""
+        while True:
+            email = yield(f"{suggest}Enter email: ")
+            if Contact.email_validator(email):
+                break
+            suggest = "Invalid email format. Email should by like username@domain.tld\n"
+        suggest = ""
+        while True:
+            dob = yield(f"{suggest}Enter date of birthday: ")
+            if Contact.dob_validator(dob):
+                break
+            suggest = f"Invalid date of birthday format. Date of birthday should by like {date.today().strftime(config.DOB_FORMAT)}\n"
         addr = yield("Enter address: ")
         contact = Contact(name=name, phone=phone, email=email, dob=dob, addr=addr)
         self.storage.append(contact)
