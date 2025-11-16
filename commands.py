@@ -35,7 +35,7 @@ class BotCommands():
                             )
                         i += 1
                     else:
-                        help_string = value
+                        help_string = f"{Fore.RED}{command}{Style.RESET_ALL} command: {value}"
 
                 validation_errors = [
                     field for field, value in params_validation.items()
@@ -57,27 +57,27 @@ class BotCommands():
             return func(self, params)
         return inner
 
-    @input_validator
-    def hello_handler(self, params):
-        return "Hello, my dear! Have a nice day!"
 
     @input_validator
     def add_contact_handler(self, params):
         return self.contactbook.add_contact(params[0])
 
+
     def add_contact_helper(self):
         return {
-            'help': "'add_contact' command: add new entry",
+            'help': "add new contact",
             'name': None,
         }
+
 
     @input_validator
     def change_contact_handler(self, params):
         return self.contactbook.change_contact(params[0], params[1])
 
+
     def change_contact_helper(self):
         return {
-            'help': "'change_contact' command: modify existing entry",
+            'help': "modify existing contact",
             'name': None,
             'phone': Contact.phone_validator,
         }
@@ -86,9 +86,10 @@ class BotCommands():
     def get_contact_handler(self, params):
         return self.contactbook.get_contact(params[0])
 
+
     def get_contact_helper(self):
         return {
-            'help': "'get_contact' command: get contact by name",
+            'help': "get contact by name",
             'name': None,
         }
 
@@ -96,11 +97,13 @@ class BotCommands():
     def del_contact_handler(self, params):
         return self.contactbook.del_contact(params[0])
 
+
     def del_contact_helper(self):
         return {
-            'help': "'del_contact' command: delete contact by name",
+            'help': "delete contact by name",
             'name': None,
         }
+
 
     @input_validator
     def all_contacts_handler(self, params):
@@ -109,13 +112,32 @@ class BotCommands():
             phone_list += f"Name: {name}\tphone: {phone}\n"
         return phone_list
 
+
+    def all_contacts_helper(self):
+        return {
+            'help': "print all contacts",
+        }
+
+
     @input_validator
     def exit_handler(self, params):
         self.done = True
         return "Bye!"
 
+
+    def exit_helper(self):
+        return {
+            'help': "exit application",
+        }
+
+
     def close_handler(self, params):
         return self.exit_handler(params)
+
+
+    def close_helper(self):
+        return self.exit_helper()
+
 
     def _add_note_fully_interactive(self):
         title = yield ("Enter note title: ")
@@ -131,6 +153,7 @@ class BotCommands():
         if tags and not Notes.tags_validator(tags):
             return "Error: Invalid tags format."
         return self.notes.add_note(title, content, tags)
+
 
     def add_note_handler(self, params):
         if len(params) == 0:
@@ -179,33 +202,39 @@ class BotCommands():
 
         return self.notes.add_note(title, content, tags)
 
+
     def add_note_helper(self):
         return {
             'help': (
-                "'add_note' command: add note (interactive mode). "
+                "add note (interactive mode). "
                 "Usage: add_note OR add_note <title> OR "
                 "add_note <title> <content> [tags]"
             ),
         }
 
+
     @input_validator
     def show_note_handler(self, params):
         return self.notes.get_note(params[0])
 
+
     def show_note_helper(self):
         return {
-            'help': "'show_note' command: get note from notes by title",
+            'help': "get note from notes by title",
             'title': Notes.title_validator,
         }
+
 
     @input_validator
     def list_notes_handler(self, params):
         return self.notes.list_all_notes()
 
+
     def list_notes_helper(self):
         return {
-            'help': "'list_notes' command: list all notes",
+            'help': "list all notes",
         }
+
 
     @input_validator
     def edit_note_handler(self, params):
@@ -240,21 +269,25 @@ class BotCommands():
 
         return self.notes.edit_note(title, new_content, new_tags)
 
+
     def edit_note_helper(self):
         return {
-            'help': "'edit_note' command: edit existing note",
+            'help': "edit existing note",
             'title': Notes.title_validator,
         }
+
 
     @input_validator
     def delete_note_handler(self, params):
         return self.notes.delete_note(params[0])
 
+
     def delete_note_helper(self):
         return {
-            'help': "'delete_note' command: delete note by title",
+            'help': "delete note by title",
             'title': Notes.title_validator,
         }
+
 
     @input_validator
     def add_tags_handler(self, params):
@@ -278,12 +311,14 @@ class BotCommands():
 
         return self.notes.add_tags(title, tags_str)
 
+
     def add_tags_helper(self):
         return {
-            'help': "'add_tags' command: add tags to note",
+            'help': "add tags to note",
             'title': Notes.title_validator,
             'tags': None,
         }
+
 
     @input_validator
     def remove_tags_handler(self, params):
@@ -299,22 +334,26 @@ class BotCommands():
 
         return self.notes.remove_tags(title, tags_str)
 
+
     def remove_tags_helper(self):
         return {
-            'help': "'remove_tags' command: remove tags from note",
+            'help': "remove tags from note",
             'title': Notes.title_validator,
             'tags': None,
         }
+
 
     @input_validator
     def search_by_tag_handler(self, params):
         return self.notes.search_by_tag(params[0])
 
+
     def search_by_tag_helper(self):
         return {
-            'help': "'search_by_tag' command: search notes by single tag",
+            'help': "search notes by single tag",
             'tag': None,
         }
+
 
     @input_validator
     def search_by_tags_handler(self, params):
@@ -336,33 +375,39 @@ class BotCommands():
 
         return self.notes.search_by_tags(tags_str, match_all)
 
+
     def search_by_tags_helper(self):
         return {
             'help': (
-                "'search_by_tags' command: search notes by multiple tags "
+                "search notes by multiple tags "
                 "(use --all for AND logic)"
             ),
             'tags': None,
         }
 
+
     @input_validator
     def list_all_tags_handler(self, params):
         return self.notes.list_all_tags()
 
+
     def list_all_tags_helper(self):
         return {
-            'help': "'list_all_tags' command: list all tags with counts",
+            'help': "list all tags with counts",
         }
+
 
     @input_validator
     def sort_by_tag_handler(self, params):
         return self.notes.sort_by_tag(params[0])
 
+
     def sort_by_tag_helper(self):
         return {
-            'help': "'sort_by_tag' command: sort notes by tag",
+            'help': "sort notes by tag",
             'tag': None,
         }
+
 
     @input_validator
     def help_handler(self, params):
@@ -384,6 +429,13 @@ class BotCommands():
             )
         return f"Available comands:\n{txt}"
 
+
+    def help_helper(self):
+        return {
+            'help': "list available commands",
+        }
+
+
     def get_avail_commands(self):
         return [
             func.replace("_handler", "")
@@ -391,11 +443,13 @@ class BotCommands():
             if func.endswith("_handler")
         ]
 
+
     def get_helper(self, command):
         helper_name = command + "_helper"
         if helper_name in dir(self):
             return getattr(self, helper_name)
         return None
+
 
     def find_similar(self, command):
         all_commands = self.get_avail_commands()
