@@ -3,6 +3,7 @@ from pickle import UnpicklingError
 from datetime import datetime, date, timedelta
 from calendar import calendar
 import re
+from colorama import Fore, Style
 from config import (
     PHONEBOOK_STORAGE,
     DOB_FORMAT,
@@ -114,10 +115,9 @@ class Contact():
 
 class Contactbook():
 
-    storage = []
-    last_id = 0
-
     def __init__(self):
+        self.storage = {}
+        self.last_id = 0
         phonebook = self._load_data()
         if phonebook:
             self.storage = phonebook
@@ -127,7 +127,7 @@ class Contactbook():
             with open(PHONEBOOK_STORAGE, "rb") as f:
                 return pickle.load(f)
         except (FileNotFoundError, EOFError, UnpicklingError):
-            return []
+            return {}
 
     def _save_to_file(self):
         with open(PHONEBOOK_STORAGE, 'wb') as f:
@@ -138,6 +138,7 @@ class Contactbook():
         while True:
             phone = yield (f"{suggest}Enter phone: ")
             if Contact.phone_validator(phone):
+                phone = Contact.phone_normalize(phone)
                 break
             suggest = ("Invalid phone format."
                        "Phone should by like +380987654321\n")
@@ -153,6 +154,7 @@ class Contactbook():
             dob = yield (f"{suggest}Enter date of birthday: ")
             if Contact.dob_validator(dob):
                 break
+
             suggest = (
                 "Invalid date of birthday format. "
                 "Date of birthday should be like "
@@ -167,36 +169,117 @@ class Contactbook():
             dob=dob,
             addr=addr
             )
-        self.storage.append(contact)
+        contact_id = 0 if not self.storage else max(self.storage.keys()) + 1
+        self.storage[contact_id] = contact
         self.last_id = len(self.storage)
+        self._save_to_file()
         return "Contact added"
 
-    def change_contact(self, name, phone):
-        if name in self.storage:
-            self.storage[name] = phone
-            return "OK"
-        else:
-            return f"Entry {name} not found"
+    def change_contact(self, name: str):
+        contacts = self.get_contact(name)
+        if not contacts:
+            raise ValueError(f"Contact '{name}' not found.")
+
+        contact = yield from self._handle_multi_choice(contacts)
+
+        # Setting new phone number
+        suggest = ""
+        while True:
+            phone = yield (
+                f"{suggest}Current phone: {contact.phone}\n"
+                "New phone [-skip]: "
+            )
+            if phone == "-skip":
+                break
+            if Contact.phone_validator(phone):
+                contact.phone = Contact.phone_normalize(phone)
+                break
+            suggest = "Invalid phone format. Example: +380987654321\n"
+
+        # Setting new email
+        suggest = ""
+        while True:
+            email = yield (
+                f"{suggest}Current email: {contact.email}\n"
+                "New email [-skip]: "
+            )
+            if email == "-skip":
+                break
+            if Contact.email_validator(email):
+                contact.email = email
+                break
+            suggest = "Invalid email format. Example: name@domain.tld\n"
+
+        # Setting new dob
+        suggest = ""
+        while True:
+            dob = yield (
+                f"{suggest}Current birthday: {contact.dob}\n"
+                "New birthday [-skip]: "
+            )
+            if dob == "-skip":
+                break
+            if Contact.dob_validator(dob):
+                contact.dob = dob
+                break
+            suggest = (
+                "Invalid date format. Should be like "
+                f"{date.today().strftime(DOB_FORMAT)}\n"
+            )
+
+        # Setting new address
+        addr = yield (
+            f"Current address: {contact.addr}\n"
+            "New address [-skip]: "
+        )
+        if addr != "-skip":
+            contact.addr = addr
+
+        self._save_to_file()
+        return "Contact updated"
+
+    def _handle_multi_choice(self, contacts: dict):
+        if len(contacts) == 1:
+            return next(iter(contacts.values()))
+
+        txt, id_map = self.print_contacts_numbered(contacts)
+
+        suggest = ""
+        while True:
+            choice = yield (
+                f"{suggest}{txt}\n"
+                "Enter the number of the contact to update: "
+            )
+            try:
+                choice = int(choice)
+                if choice in id_map:
+                    contact_id = id_map[choice]
+                    return self.storage[contact_id]
+                suggest = ("Invalid number. "
+                           "Please enter one of the shown numbers.\n")
+            except ValueError:
+                suggest = "Input must be a number.\n"
 
     def get_contact(self, name):
-        found = self.get_contacts_by_name(name)
-        if found:
-            return self.print_contacts(found)
+        return self._get_contacts_by_name(name)
+        # found = self._get_contacts_by_name(name)
+        # if not found:
+        #     return self.print_contacts(found)
 
-        return f"Contact {name} not found"
+        # return f"Contact {name} not found"
 
-    def get_contacts_by_name(self, name):
+    def _get_contacts_by_name(self, name):
         found = {}
-        for id, contact in enumerate(self.storage):
+        for id, contact in self.storage.items():
             if contact.name == name:
                 found[id] = contact
         return found
 
     def all_contacts(self):
-        return self.print_contacts(dict(enumerate(self.storage)))
+        return self.print_contacts(self.storage)
 
     def del_contact(self, name):
-        found = self.get_contacts_by_name(name)
+        found = self._get_contacts_by_name(name)
         if not found:
             return f"Contact {name} not found"
         elif len(found) > 1:
@@ -207,9 +290,9 @@ class Contactbook():
             )
 
             if delete_all.lower() == 'y':
-                # TODO
-                pass
-                return f"All contacts with name '{name}' deleted"
+                for id in iter(found):
+                    del self.storage[id]
+                    return f"All contacts with name '{name}' deleted"
             else:
                 return (
                     "Contact not deleted. You can use command "
@@ -219,8 +302,7 @@ class Contactbook():
                     "to delete last found contact"
                 )
         else:
-            # TODO
-            pass
+            del self.storage[next(iter(found))]
             return "Contact deleted"
 
     def search_contact(self, needle):
@@ -271,3 +353,17 @@ class Contactbook():
             self.last_id = id
 
         return txt
+    
+    def print_contacts_numbered(self, contacts: dict[int, "Contact"]):
+        txt = ""
+        id_map = {}
+        for i, (contact_id, contact) in enumerate(contacts.items(), start=1):
+            txt += (
+                f"{i}. {contact.name}\t"
+                f"{contact.dob.strftime('%Y.%m.%d')}\t"
+                f"{contact.email}\t"
+                f"{contact.phone}\t"
+                f"{contact.addr}\n"
+            )
+            id_map[i] = contact_id
+        return txt, id_map
