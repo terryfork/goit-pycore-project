@@ -253,20 +253,20 @@ class BotCommands():
         }
 
     @input_validator
-    def search_by_tag_handler(self, params):
-        return self.notes.search_by_tag(params[0])
+    def search_notes_by_tag_handler(self, params):
+        return self.notes.search_notes_by_tag(params[0])
 
-    def search_by_tag_helper(self):
+    def search_notes_by_tag_helper(self):
         return {
             'help': "search notes by single tag",
             'tag': None,
         }
 
     @input_validator
-    def search_by_tags_handler(self, params):
-        return self.notes.search_by_tags_from_command(params)
+    def search_notes_by_tags_handler(self, params):
+        return self.notes.search_notes_by_tags_from_command(params)
 
-    def search_by_tags_helper(self):
+    def search_notes_by_tags_helper(self):
         return {
             'help': (
                 "search notes by multiple tags "
@@ -285,10 +285,10 @@ class BotCommands():
         }
 
     @input_validator
-    def sort_by_tag_handler(self, params):
-        return self.notes.sort_by_tag(params[0])
+    def sort_notes_by_tag_handler(self, params):
+        return self.notes.sort_notes_by_tag(params[0])
 
-    def sort_by_tag_helper(self):
+    def sort_notes_by_tag_helper(self):
         return {
             'help': "sort notes by tag",
             'tag': None,

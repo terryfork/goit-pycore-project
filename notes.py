@@ -305,11 +305,12 @@ class Notes:
 
         return self.remove_tags(title, tags_str)
 
-    def search_by_tags_from_command(self, params):
+    def search_notes_by_tags_from_command(self, params):
         if len(params) < 1:
             msg = (
-                "'search_by_tags' command: search notes by multiple tags\n"
-                "Command usage: search_by_tags <tags> [--all]"
+                "'search_notes_by_tags' command: search notes by multiple "
+                "tags\n"
+                "Command usage: search_notes_by_tags <tags> [--all]"
             )
             return msg
 
@@ -322,7 +323,7 @@ class Notes:
 
         tags_str = " ".join(tags_params)
 
-        return self.search_by_tags(tags_str, match_all)
+        return self.search_notes_by_tags(tags_str, match_all)
 
     def get_note(self, title):
         found_key = self._find_note_key(title)
@@ -343,7 +344,9 @@ class Notes:
         else:
             return f"Note '{title}' not found"
 
-    def edit_note(self, title, new_title=None, new_content=None, new_tags=None):
+    def edit_note(
+        self, title, new_title=None, new_content=None, new_tags=None
+    ):
         found_key = self._find_note_key(title)
 
         if not found_key:
@@ -424,7 +427,7 @@ class Notes:
         tags_display = ', '.join(note['tags']) if note['tags'] else 'none'
         return f"Tags removed. Current tags: {tags_display}"
 
-    def search_by_tag(self, tag):
+    def search_notes_by_tag(self, tag):
         tag_lower = tag.lower()
         found_notes = []
 
@@ -452,11 +455,9 @@ class Notes:
         else:
             return f"No notes found with tag '{tag}'"
 
-    def search_by_tags(self, tags_str, match_all=False):
-        search_tags = set(
-            tag.strip().lower()
-            for tag in tags_str.split(',') if tag.strip()
-        )
+    def search_notes_by_tags(self, tags_str, match_all=False):
+        tags_list = self.normalize_tags(tags_str)
+        search_tags = set(tag.lower() for tag in tags_list)
         found_notes = []
 
         for title, note in self.notes.items():
@@ -509,7 +510,7 @@ class Notes:
 
         return result
 
-    def sort_by_tag(self, tag):
+    def sort_notes_by_tag(self, tag):
         tag_lower = tag.lower()
         found_notes = []
 
