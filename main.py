@@ -4,7 +4,10 @@ from typing import Generator
 
 
 def main():
-    print("Hello! This is CLI bot. Please enter command.")
+    print(
+        "Hello! This is CLI bot. Please enter command.\n"
+        "Type 'help' for available commands list"
+    )
     command_processor = BotCommands()
     while not command_processor.done:
         console_line = ""
