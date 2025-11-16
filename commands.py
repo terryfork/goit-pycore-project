@@ -1,4 +1,4 @@
-from contactbook import Contactbook
+from contactbook import Contactbook, Contact
 from notes import Notes
 from Levenshtein import distance
 from colorama import Fore, Style
@@ -24,7 +24,7 @@ class BotCommands():
                 i = 0
                 for param_name, value in command_params.items():
                     if param_name != 'help':
-                        if type(value) is func:
+                        if callable(value):
                             params_validation[param_name] = (
                                 value(params[i]) if len(params) > i
                                 else False
@@ -116,6 +116,20 @@ class BotCommands():
         return {
             'help': "edit last contact",
         }
+
+    @input_validator
+    def search_contact_handler(self, params):
+        key = params[0]
+        value = params[1]
+
+        return self.contactbook.search_contacts(key, value)
+
+    def search_contact_helper(self):
+        return {
+                'help': "search contacts by fields",
+                'field': Contact.field_validator,
+                'value': None
+            }
 
     @input_validator
     def get_contact_handler(self, params):
