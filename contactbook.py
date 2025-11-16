@@ -262,11 +262,6 @@ class Contactbook():
 
     def get_contact(self, name):
         return self._get_contacts_by_name(name)
-        # found = self._get_contacts_by_name(name)
-        # if not found:
-        #     return self.print_contacts(found)
-
-        # return f"Contact {name} not found"
 
     def _get_contacts_by_name(self, name):
         found = {}
