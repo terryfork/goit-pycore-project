@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import datetime, date
 import config
 import re
+from colorama import Fore, Style
 
 class Contact():
     def __init__(self, **kwargs):
@@ -111,7 +112,7 @@ class Contact():
 
 class Contactbook():
 
-    storage = []
+    storage = {}
     last_id = 0
 
 
@@ -139,6 +140,7 @@ class Contactbook():
         while True:
             phone = yield(f"{suggest}Enter phone: ")
             if Contact.phone_validator(phone):
+                phone = Contact.phone_normalize(phone)
                 break
             suggest = "Invalid phone format. Phone should by like +380987654321\n"
         suggest = ""
@@ -155,8 +157,9 @@ class Contactbook():
             suggest = f"Invalid date of birthday format. Date of birthday should by like {date.today().strftime(config.DOB_FORMAT)}\n"
         addr = yield("Enter address: ")
         contact = Contact(name=name, phone=phone, email=email, dob=dob, addr=addr)
-        self.storage.append(contact)
-        self.last_id = len(self.storage)
+        contact_id = 0 if not self.storage else max(self.storage.keys()) + 1
+        self.storage[contact_id] = contact
+        self.last_id = contact_id
         return "Contact added"
 
 
@@ -170,41 +173,40 @@ class Contactbook():
 
 
     def get_contact(self, name):
-        found = self.get_contacts_by_name(name)
+        found = self._get_contacts_by_name(name)
         if found:
             return self.print_contacts(found)
 
         return f"Contact {name} not found"
 
 
-    def get_contacts_by_name(self, name):
+    def _get_contacts_by_name(self, name):
         found = {}
-        for id, contact in enumerate(self.storage):
+        for id, contact in self.storage.items():
             if contact.name == name:
                 found[id] = contact
         return found
 
 
     def all_contacts(self):
-        return self.print_contacts(dict(enumerate(self.storage)))
+        return self.print_contacts(self.storage)
 
 
     def del_contact(self, name):
-        found = self.get_contacts_by_name(name)
+        found = self._get_contacts_by_name(name)
         if not found:
             return f"Contact {name} not found"
         elif len(found) > 1:
             list = self.print_contacts(found)
             delete_all = yield(f"{list}Found {len(found)} contacts with name '{name}'. Delete all of them(y/N)?")
             if delete_all.lower() == 'y':
-#TODO
-                pass
-                return f"All contacts with name '{name}' deleted"
+                for id in iter(found):
+                    del self.storage[id]
+                    return f"All contacts with name '{name}' deleted"
             else:
                 return f"Contact not deleted. You can use command {Fore.RED}del_contact_id{Style.RESET_ALL} to delete contact by it's id or command {Fore.RED}del_last{Style.RESET_ALL} to delete last found contact"
         else:
-#TODO
-            pass
+            del self.storage[next(iter(found))]
             return "Contact deleted"
 
 
