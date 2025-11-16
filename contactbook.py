@@ -305,6 +305,19 @@ class Contactbook():
             del self.storage[next(iter(found))]
             return "Contact deleted"
 
+    def del_last(self):
+        if self.last_id not in self.storage:
+            return "Contact doesn't exists"
+        confirm_msg = (
+            self.print_contacts({self.last_id: self.storage[self.last_id]}) +
+            "Are you sure to delete this contact (y/N)?"
+        )
+        confirm_del = yield (confirm_msg)
+        if confirm_del.lower() == 'y':
+            del self.storage[self.last_id]
+            return "Contact deleted"
+        return "Operation canceled"
+
     def search_contact(self, needle):
         # TODO
         pass
@@ -353,7 +366,7 @@ class Contactbook():
             self.last_id = id
 
         return txt
-    
+
     def print_contacts_numbered(self, contacts: dict[int, "Contact"]):
         txt = ""
         id_map = {}

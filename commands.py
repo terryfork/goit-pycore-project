@@ -101,6 +101,14 @@ class BotCommands():
             'name': None,
         }
 
+    def del_last_contact_handler(self, params):
+        return self.contactbook.del_last()
+
+    def del_last_contact_helper(self):
+        return {
+            'help': "delete last contact",
+        }
+
     @input_validator
     def all_contacts_handler(self, params):
         return self.contactbook.all_contacts()
