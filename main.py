@@ -17,16 +17,19 @@ def main():
         handler_name = command + "_handler"
         if handler_name in dir(command_processor):
             handler = getattr(command_processor, handler_name)
-            result = handler(params)
-            if isinstance(result, Generator):
-                try:
-                    answ = next(result)
-                    while True:
-                        answ = result.send(input(answ))
-                except StopIteration as done:
-                    print(done)
-            else:
-                print(result)
+            try:
+                result = handler(params)
+                if isinstance(result, Generator):
+                    try:
+                        answ = next(result)
+                        while True:
+                            answ = result.send(input(answ))
+                    except StopIteration as done:
+                        print(done)
+                else:
+                    print(result)
+            except Exception as e:
+                print(f"Command failed. Unexpected error occurred: {e}")
         else:
             possible_commands = command_processor.find_similar(command)
             if possible_commands:
