@@ -171,7 +171,7 @@ class BotCommands():
 
     def edit_note_helper(self):
         return {
-            'help': "edit existing note",
+            'help': "edit existing note (interactive mode available)",
             'title': Notes.title_validator,
         }
 
