@@ -40,7 +40,7 @@ class Contact():
         return bool(re.fullmatch(config.EMAIL_FORMAT, cleaned_email))
 
     @staticmethod
-    def DOB_validator(dob: str) -> bool:
+    def dob_validator(dob: str) -> bool:
         try:
             birth_date = datetime.strptime(dob, config.DOB_FORMAT).date()
             return birth_date <= date.today()
@@ -93,7 +93,7 @@ class Contact():
     @phone.setter
     def phone(self, phone):
         pure_phone = self.phone_normalize(phone)
-        if self.email_validator(pure_phone):
+        if self.phone_validator(pure_phone):
             self._data['phone'] = phone
 
 
@@ -103,20 +103,16 @@ class Contact():
 
 
     @dob.setter
-    def dob(self, dob):
-        try:
-            dob = datetime.strptime(dob, "%Y.%m.%d")
-        except ValueError:
-            print("Error: invalid date format. Date must be like 2025.11.15.")
-            return
-        if self.dob_validator(dob):
-            self._data['dob'] = dob
-
+    def dob(self, dob_str):
+        if self.dob_validator(dob_str):
+            self._data['dob'] = datetime.strptime(dob_str, config.DOB_FORMAT)
+        else:
+            raise ValueError("Invalid date format. Date must be like " + date.today().strftime(config.DOB_FORMAT))
 
 
 class Contactbook():
 
-    phonebook = []
+    storage = []
     last_id = 0
 
 
@@ -136,7 +132,7 @@ class Contactbook():
 
     def _save_to_file(self):
         with open(self.storage_file, 'wb') as f:
-            pickle.dump(self.phonebook, f)
+            pickle.dump(self.storage, f)
 
 
     def add_contact(self, name):
@@ -145,38 +141,57 @@ class Contactbook():
         dob = yield("Enter date of birthday(YYYY.MM.DD): ")
         addr = yield("Enter address: ")
         contact = Contact(name=name, phone=phone, email=email, dob=dob, addr=addr)
-        self.phonebook.append(contact)
-        self.last_id = len(self.phonebook)
+        self.storage.append(contact)
+        self.last_id = len(self.storage)
         return "Contact added"
 
 
     def change_contact(self, name, phone):
 #TODO
-        if name in self.phonebook:
-            self.phonebook[name] = phone
+        if name in self.storage:
+            self.storage[name] = phone
             return "OK"
         else:
             return f"Entry {name} not found"
 
 
     def get_contact(self, name):
-        found = {}
-        for id, contact in enumerate(self.phonebook):
-            if contact.name == name:
-                found[id] = contact
+        found = self.get_contacts_by_name(name)
         if found:
             return self.print_contacts(found)
 
         return f"Contact {name} not found"
 
 
-    def all_contacts(self):
-#TODO
-        return self.phonebook
+    def get_contacts_by_name(self, name):
+        found = {}
+        for id, contact in enumerate(self.storage):
+            if contact.name == name:
+                found[id] = contact
+        return found
 
-    def del_contact(self):
+
+    def all_contacts(self):
+        return self.print_contacts(dict(enumerate(self.storage)))
+
+
+    def del_contact(self, name):
+        found = self.get_contacts_by_name(name)
+        if not found:
+            return f"Contact {name} not found"
+        elif len(found) > 1:
+            list = self.print_contacts(found)
+            delete_all = yield(f"{list}Found {len(found)} contacts with name '{name}'. Delete all of them(y/N)?")
+            if delete_all.lower() == 'y':
 #TODO
-        pass
+                pass
+                return f"All contacts with name '{name}' deleted"
+            else:
+                return f"Contact not deleted. You can use command {Fore.RED}del_contact_id{Style.RESET_ALL} to delete contact by it's id or command {Fore.RED}del_last{Style.RESET_ALL} to delete last found contact"
+        else:
+#TODO
+            pass
+            return "Contact deleted"
 
 
     def search_contact(self, needle):
@@ -188,7 +203,7 @@ class Contactbook():
         today = date.today()
         list_of_birthday_people = []
 
-        for contact in self.phonebook.values():
+        for contact in self.storage.values():
             dob = getattr(contact, "dob", None)
             if not dob:
                 continue
@@ -204,7 +219,8 @@ class Contactbook():
                 list_of_birthday_people.append(contact)
 
         return list_of_birthday_people
-    
+
+
     def _safe_birthday(self, year: int, month: int, day: int) -> date | None:
         try:
             return date(year, month, day)
@@ -212,6 +228,7 @@ class Contactbook():
             if month == 2 and day == 29:
                 return date(year, 2, 28)
             return None
+
 
     def print_contacts(self, contacts):
         txt = ""

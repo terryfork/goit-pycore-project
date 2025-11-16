@@ -107,10 +107,7 @@ class BotCommands():
 
     @input_validator
     def all_contacts_handler(self, params):
-        phone_list = ""
-        for name, phone in self.contactbook.all_contacts().items():
-            phone_list += f"Name: {name}\tphone: {phone}\n"
-        return phone_list
+        return self.contactbook.all_contacts()
 
 
     def all_contacts_helper(self):
