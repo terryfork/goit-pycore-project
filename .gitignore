@@ -213,4 +213,5 @@ pyvenv.cfg
 
 # Project-specific: User data files
 storage/*.json
+storage/*.pkl
 !storage/.gitkeep
