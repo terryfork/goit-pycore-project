@@ -70,6 +70,21 @@ class BotCommands():
             'name': None,
         }
 
+
+    @input_validator
+    def upcoming_birthdays_handler(self, params):
+        try:
+            days = int(params[0])
+        except ValueError:
+            return "Invalid days format"
+        return self.contactbook.upcoming_birthdays(days)
+
+    def upcoming_birthdays_helper(self):
+        return {
+            'help': "get upcoming contact's birthdays",
+            'days': None,
+        }
+
     @input_validator
     def edit_contact_handler(self, params):
         return self.contactbook.edit_by_name(params[0])

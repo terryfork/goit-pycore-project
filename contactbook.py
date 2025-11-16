@@ -191,7 +191,7 @@ class Contactbook():
         return (yield from self.edit_contact(contact))
 
     def edit_by_name(self, name):
-        contacts = self.get_contact(name)
+        contacts = self._get_contacts_by_name(name)
         if not contacts:
             return f"No contact found with name '{name}'"
 
@@ -281,7 +281,8 @@ class Contactbook():
                 suggest = "Input must be a number.\n"
 
     def get_contact(self, name):
-        return self._get_contacts_by_name(name)
+        found = self._get_contacts_by_name(name)
+        return self.print_contacts(found)
 
     def _get_contacts_by_name(self, name):
         found = {}
@@ -342,20 +343,24 @@ class Contactbook():
         # TODO
         pass
 
-    def get_birthdays(self, days: int) -> list[Contact]:
-        upcoming_birthday_contacts = []
-        today = datetime.today().date()
+    def upcoming_birthdays(self, days):
+        found = self._get_birthdays(days)
+        return f"Contacts having birthdays in next {days} days:\n" + self.print_contacts(found)
+
+    def _get_birthdays(self, days: int) -> list[Contact]:
+        upcoming_birthday_contacts = {}
+        today = datetime.now().date()
         end_date = today + timedelta(days=days)
 
-        for contact in self.phonebook.values():
+        for id, contact in self.storage.items():
             dob = getattr(contact, "dob", None)
             if not dob:
                 continue
 
             birthday = self._next_birthday(dob, today)
 
-            if today <= birthday < end_date:
-                upcoming_birthday_contacts.append(contact)
+            if today <= birthday.date() < end_date:
+                upcoming_birthday_contacts[id] = contact
 
         return upcoming_birthday_contacts
 
@@ -363,7 +368,7 @@ class Contactbook():
         year = today.year
         birthday = self._birthday_for_year(dob, year)
 
-        if birthday < today:
+        if birthday.date() < today:
             birthday = self._birthday_for_year(dob, year + 1)
 
         return birthday
@@ -374,12 +379,6 @@ class Contactbook():
         return dob.replace(year=year)
 
     def print_contacts(self, contacts):
-        if not contacts:
-            return (
-                "There are no contacts at the moment.\n"
-                "Execute 'add_contact <name>'"
-            )
-
         txt = ""
         for id, contact in contacts.items():
             txt += (
