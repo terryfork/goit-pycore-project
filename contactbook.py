@@ -24,7 +24,7 @@ class Contact():
 
     @staticmethod
     def name_validator(name):
-        return len(name) > 0 and len(name) <= MAX_NAME_LEN
+        return name.isalpha() and len(name) > 0 and len(name) <= MAX_NAME_LEN
 
     @staticmethod
     def addr_validator(addr):
@@ -120,7 +120,6 @@ class Contactbook():
     storage = {}
     last_id = 0
 
-
     def __init__(self):
         self.storage = {}
         self.last_id = 0
@@ -180,21 +179,19 @@ class Contactbook():
         self._save_to_file()
         return "Contact added"
 
-
     def edit_last_contact(self):
         if self.last_id in self.storage:
             return self.edit_by_id(self.last_id)
         return self.NOT_FOUND
 
     def edit_by_id(self, id):
-#TODO
+        # TODO
         pass
-
 
     def edit_contact(self, name: str):
         contacts = self.get_contact(name)
         if not contacts:
-            raise ValueError(f"Contact '{name}' not found.")
+            return f"No contact with name '{name}' found"
 
         contact = yield from self._handle_multi_choice(contacts)
 
@@ -297,14 +294,14 @@ class Contactbook():
             return self.del_by_id(next(iter(found)))
         return self.del_all(found)
 
-
     def del_all(self, found):
         list = self.print_contacts(found)
-        delete_all = yield f"{list}Found {len(found)} contacts. Delete all of them(y/N)?"
+        delete_all = yield (f"{list}Found {len(found)} contacts."
+                            "Delete all of them(y/N)?")
         if delete_all.lower() == 'y':
             for id in iter(found):
                 del self.storage[id]
-            return f"Contacts deleted"
+            return "Contacts deleted"
         else:
             return (
                 "Contact not deleted. You can use command "
@@ -313,7 +310,6 @@ class Contactbook():
                 f"{Fore.RED}del_last{Style.RESET_ALL} "
                 "to delete last found contact"
             )
-
 
     def del_last(self):
         return self.del_by_id(self.last_id)
@@ -371,6 +367,12 @@ class Contactbook():
         return dob.replace(year=year)
 
     def print_contacts(self, contacts):
+        if not contacts:
+            return (
+                "There are no contacts at the moment.\n"
+                "Execute 'add_contact <name>'"
+            )
+
         txt = ""
         for id, contact in contacts.items():
             txt += (
