@@ -71,14 +71,34 @@ class BotCommands():
         }
 
     @input_validator
-    def change_contact_handler(self, params):
-        name = params[0]
-        return self.contactbook.change_contact(name)
+    def edit_contact_handler(self, params):
+        return self.contactbook.edit_contact(params[0])
 
-    def change_contact_helper(self):
+    def edit_contact_helper(self):
         return {
-            'help': "modify existing contact",
-            'name': None
+            'help': "edit existing contact by name",
+            'name': None,
+        }
+
+    @input_validator
+    def edit_contact_id_handler(self, params):
+        return self.contactbook.edit_contact_id(params[0])
+
+
+    def edit_contact_id_helper(self):
+        return {
+            'help': "edit existing contact by id",
+            'id': None,
+        }
+
+    @input_validator
+    def edit_last_contact_handler(self, params):
+        return self.contactbook.edit_last_contact()
+
+
+    def edit_last_contact_helper(self):
+        return {
+            'help': "edit last contact",
         }
 
     @input_validator
@@ -99,6 +119,16 @@ class BotCommands():
         return {
             'help': "delete contact by name",
             'name': None,
+        }
+
+    def del_contact_id_handler(self, params):
+        return self.contactbook.del_by_id(params[0])
+
+
+    def del_contact_id_helper(self):
+        return {
+            'help': "delete contact by id",
+            'id': None,
         }
 
     def del_last_contact_handler(self, params):

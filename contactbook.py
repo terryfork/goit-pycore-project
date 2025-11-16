@@ -9,6 +9,8 @@ from config import (
     DOB_FORMAT,
     PHONE_FORMAT,
     EMAIL_FORMAT,
+    MAX_NAME_LEN,
+    MAX_ADDR_LEN,
 )
 
 
@@ -20,15 +22,13 @@ class Contact():
             if field in kwargs:
                 setattr(self, field, kwargs[field])
 
-    # TODO
     @staticmethod
-    def name_validator(phone):
-        return True
+    def name_validator(name):
+        return len(name) > 0 and len(name) <= MAX_NAME_LEN
 
-    # TODO
     @staticmethod
-    def addr_validator(phone):
-        return True
+    def addr_validator(addr):
+        return len(addr) <= MAX_ADDR_LEN
 
     @staticmethod
     def phone_validator(phone: str) -> bool:
@@ -115,6 +115,12 @@ class Contact():
 
 class Contactbook():
 
+    NOT_FOUND = "Contact doesn't exists"
+
+    storage = {}
+    last_id = 0
+
+
     def __init__(self):
         self.storage = {}
         self.last_id = 0
@@ -154,7 +160,6 @@ class Contactbook():
             dob = yield (f"{suggest}Enter date of birthday: ")
             if Contact.dob_validator(dob):
                 break
-
             suggest = (
                 "Invalid date of birthday format. "
                 "Date of birthday should be like "
@@ -169,13 +174,24 @@ class Contactbook():
             dob=dob,
             addr=addr
             )
-        contact_id = 0 if not self.storage else max(self.storage.keys()) + 1
+        contact_id = 1 if not self.storage else max(self.storage.keys()) + 1
         self.storage[contact_id] = contact
         self.last_id = len(self.storage)
         self._save_to_file()
         return "Contact added"
 
-    def change_contact(self, name: str):
+
+    def edit_last_contact(self):
+        if self.last_id in self.storage:
+            return self.edit_by_id(self.last_id)
+        return self.NOT_FOUND
+
+    def edit_by_id(self, id):
+#TODO
+        pass
+
+
+    def edit_contact(self, name: str):
         contacts = self.get_contact(name)
         if not contacts:
             raise ValueError(f"Contact '{name}' not found.")
@@ -248,7 +264,7 @@ class Contactbook():
         while True:
             choice = yield (
                 f"{suggest}{txt}\n"
-                "Enter the number of the contact to update: "
+                "Enter the id of the contact to update: "
             )
             try:
                 choice = int(choice)
@@ -277,31 +293,37 @@ class Contactbook():
         found = self._get_contacts_by_name(name)
         if not found:
             return f"Contact {name} not found"
-        elif len(found) > 1:
-            list = self.print_contacts(found)
-            delete_all = yield (
-                f"{list}Found {len(found)} contacts with name '{name}'. "
-                "Delete all of them(y/N)?"
+        elif len(found) == 1:
+            return self.del_by_id(next(iter(found)))
+        return self.del_all(found)
+
+
+    def del_all(self, found):
+        list = self.print_contacts(found)
+        delete_all = yield f"{list}Found {len(found)} contacts. Delete all of them(y/N)?"
+        if delete_all.lower() == 'y':
+            for id in iter(found):
+                del self.storage[id]
+            return f"Contacts deleted"
+        else:
+            return (
+                "Contact not deleted. You can use command "
+                f"{Fore.RED}del_contact_id{Style.RESET_ALL} "
+                "to delete contact by its id or command "
+                f"{Fore.RED}del_last{Style.RESET_ALL} "
+                "to delete last found contact"
             )
 
-            if delete_all.lower() == 'y':
-                for id in iter(found):
-                    del self.storage[id]
-                    return f"All contacts with name '{name}' deleted"
-            else:
-                return (
-                    "Contact not deleted. You can use command "
-                    f"{Fore.RED}del_contact_id{Style.RESET_ALL} "
-                    "to delete contact by its id or command "
-                    f"{Fore.RED}del_last{Style.RESET_ALL} "
-                    "to delete last found contact"
-                )
-        else:
-            del self.storage[next(iter(found))]
-            return "Contact deleted"
 
     def del_last(self):
-        if self.last_id not in self.storage:
+        return self.del_by_id(self.last_id)
+
+    def del_by_id(self, id):
+        try:
+            id = int(id)
+        except ValueError:
+            return "Invalid id format"
+        if id not in self.storage:
             return "Contact doesn't exists"
         confirm_msg = (
             self.print_contacts({self.last_id: self.storage[self.last_id]}) +
@@ -352,6 +374,7 @@ class Contactbook():
         txt = ""
         for id, contact in contacts.items():
             txt += (
+                f"{id}\t"
                 f"{contact.name}\t"
                 f"{contact.dob.strftime('%Y.%m.%d')}\t"
                 f"{contact.email}\t"
