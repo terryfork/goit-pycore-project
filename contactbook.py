@@ -347,7 +347,10 @@ class Contactbook():
 
     def upcoming_birthdays(self, days):
         found = self._get_birthdays(days)
-        return f"Contacts having birthdays in {days} days:\n" + self.print_contacts(found)
+        return (
+            f"Contacts having birthdays in {days} days:\n"
+            + self.print_contacts(found)
+        )
 
     def _get_birthdays(self, days: int) -> list[Contact]:
         upcoming_birthday_contacts = {}

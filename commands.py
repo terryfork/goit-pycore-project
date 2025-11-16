@@ -70,7 +70,6 @@ class BotCommands():
             'name': None,
         }
 
-
     @input_validator
     def upcoming_birthdays_handler(self, params):
         try:
