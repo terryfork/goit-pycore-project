@@ -309,6 +309,7 @@ class Contactbook():
         if delete_all.lower() == 'y':
             for id in iter(found):
                 del self.storage[id]
+            self._save_to_file()
             return "Contacts deleted"
         else:
             return (
@@ -336,6 +337,7 @@ class Contactbook():
         confirm_del = yield (confirm_msg)
         if confirm_del.lower() == 'y':
             del self.storage[self.last_id]
+            self._save_to_file()
             return "Contact deleted"
         return "Operation canceled"
 
@@ -345,7 +347,7 @@ class Contactbook():
 
     def upcoming_birthdays(self, days):
         found = self._get_birthdays(days)
-        return f"Contacts having birthdays in next {days} days:\n" + self.print_contacts(found)
+        return f"Contacts having birthdays in {days} days:\n" + self.print_contacts(found)
 
     def _get_birthdays(self, days: int) -> list[Contact]:
         upcoming_birthday_contacts = {}
