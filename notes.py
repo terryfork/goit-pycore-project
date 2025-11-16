@@ -131,6 +131,66 @@ class Notes:
             return "Error: Invalid tags format."
         return self.add_note(title, content, tags)
 
+    def edit_note_interactive(self, title):
+        found_key = self._find_note_key(title)
+        if not found_key:
+            return f"Note '{title}' not found"
+
+        note = self.notes[found_key]
+
+        new_title = yield (
+            f"Current title: {found_key}\n"
+            "New title (press Enter to skip): "
+        )
+        new_title = new_title.strip() if new_title else ""
+        if new_title and new_title != found_key:
+            if not self.title_validator(new_title):
+                return "Error: Invalid title format."
+            if self._find_note_key(new_title):
+                return f"Note '{new_title}' already exists"
+        else:
+            new_title = None
+
+        new_content = yield (
+            f"Current content: {note['content']}\n"
+            "New content (press Enter to skip): "
+        )
+        new_content = new_content.strip() if new_content else ""
+        if new_content:
+            if not self.content_validator(new_content):
+                return "Error: Invalid content format."
+        else:
+            new_content = None
+
+        current_tags_str = (
+            ", ".join(note.get('tags', []))
+            if note.get('tags') else "none"
+        )
+        new_tags = yield (
+            f"Current tags: {current_tags_str}\n"
+            "New tags (comma or space separated, press Enter to skip): "
+        )
+        new_tags = new_tags.strip() if new_tags else ""
+        if new_tags:
+            if not self.tags_validator(new_tags):
+                return "Error: Invalid tags format."
+        else:
+            new_tags = None
+
+        return self.edit_note(found_key, new_title, new_content, new_tags)
+
+    def edit_note_fully_interactive(self):
+        title = yield ("Enter note title to edit: ")
+        if not title or not title.strip():
+            return "Error: Title cannot be empty."
+        title = title.strip()
+
+        found_key = self._find_note_key(title)
+        if not found_key:
+            return f"Note '{title}' not found"
+
+        return (yield from self.edit_note_interactive(found_key))
+
     def add_note_from_command(self, params):
         if len(params) == 0:
             return self.add_note_fully_interactive()
@@ -179,12 +239,13 @@ class Notes:
         return self.add_note(title, content, tags)
 
     def edit_note_from_command(self, params):
-        if len(params) < 1:
-            msg = (
-                "'edit_note' command: edit existing note\n"
-                "Command usage: edit_note <title> [new_content] [new_tags]"
-            )
-            return msg
+        if len(params) == 0:
+            return self.edit_note_fully_interactive()
+
+        if len(params) == 1:
+            if not self.title_validator(params[0]):
+                return "Error: Invalid title format."
+            return self.edit_note_interactive(params[0])
 
         title = params[0]
         new_content = params[1] if len(params) > 1 else None
@@ -194,7 +255,7 @@ class Notes:
             if not self.content_validator(new_content):
                 msg = (
                     "'edit_note' command: edit existing note\n"
-                    "Command usage: edit_note <title> [new_content] "
+                    "Command usage: edit_note [<title>] [new_content] "
                     "[new_tags]\n"
                     "Invalid fields: new_content"
                 )
@@ -203,15 +264,14 @@ class Notes:
         if new_tags is not None and not self.tags_validator(new_tags):
             msg = (
                 "'edit_note' command: edit existing note\n"
-                "Command usage: edit_note <title> [new_content] [new_tags]\n"
+                "Command usage: edit_note [<title>] [new_content] [new_tags]\n"
                 "Invalid fields: new_tags"
             )
             return msg
 
-        return self.edit_note(title, new_content, new_tags)
+        return self.edit_note(title, None, new_content, new_tags)
 
     def add_tags_from_command(self, params):
-        """Обробка команди add_tags."""
         if len(params) < 2:
             msg = (
                 "'add_tags' command: add tags to note\n"
@@ -283,7 +343,7 @@ class Notes:
         else:
             return f"Note '{title}' not found"
 
-    def edit_note(self, title, new_content=None, new_tags=None):
+    def edit_note(self, title, new_title=None, new_content=None, new_tags=None):
         found_key = self._find_note_key(title)
 
         if not found_key:
@@ -291,16 +351,23 @@ class Notes:
 
         note = self.notes[found_key]
 
+        if new_title is not None and new_title != found_key:
+            if self._find_note_key(new_title):
+                return f"Note '{new_title}' already exists"
+            self.notes[new_title] = note.copy()
+            del self.notes[found_key]
+            found_key = new_title
+
         if new_content is not None:
-            note['content'] = new_content
+            self.notes[found_key]['content'] = new_content
 
         if new_tags is not None:
-            tags_list = [
-                tag.strip() for tag in new_tags.split(',') if tag.strip()
-            ]
-            note['tags'] = tags_list
+            tags_list = self.normalize_tags(new_tags)
+            self.notes[found_key]['tags'] = tags_list
 
-        note['modified'] = datetime.now().strftime(config.DATETIME_FORMAT)
+        self.notes[found_key]['modified'] = (
+            datetime.now().strftime(config.DATETIME_FORMAT)
+        )
         self._save_to_file()
         return "Note updated successfully"
 
