@@ -200,7 +200,7 @@ class Contactbook():
             next_birthday = (self._safe_birthday(today.year + 1, dob.month, dob.day)
                              if birthday_this_year < today
                              else birthday_this_year)
-            if next_birthday and (next_birthday - today).days == days:
+            if next_birthday and (next_birthday - today).days <= days:
                 list_of_birthday_people.append(contact)
 
         return list_of_birthday_people
