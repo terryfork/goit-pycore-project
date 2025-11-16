@@ -1,4 +1,4 @@
-from contactbook import Contactbook
+from contactbook import Contactbook, Contact
 from notes import Notes
 from Levenshtein import distance
 from colorama import Fore, Style
@@ -119,12 +119,16 @@ class BotCommands():
 
     @input_validator
     def search_contact_handler(self, params):
-        criteria = {}
-        for param in params:
-            if "=" in param:
-                key, value = param.split("=", 1)
-                criteria[key] = value
-        return self.contactbook.search_contacts(**criteria)
+        if len(params) != 2:
+            return "Please use: search_contact <field> <value>"
+
+        key = params[0]
+        valid_fields = {"name", "phone", "email", "address", "dob"}
+        if key not in valid_fields:
+            return f"Unknown field '{key}'. Allowed: {', '.join(valid_fields)}"
+        value = params[1]
+
+        return self.contactbook.search_contacts(key, value)
 
     def search_contact_helper(self):
         return {
