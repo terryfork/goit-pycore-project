@@ -1,8 +1,10 @@
 import pickle
 from pathlib import Path
-from datetime import datetime, date
+from calendar import calendar
+from datetime import datetime, date, timedelta
 import config
 import re
+
 
 class Contact():
     _data = {}
@@ -13,12 +15,12 @@ class Contact():
             if field in kwargs:
                 setattr(self, field, kwargs[field])
 
-#TODO
+    # TODO
     @staticmethod
     def name_validator(phone):
         return True
 
-#TODO
+    # TODO
     @staticmethod
     def addr_validator(phone):
         return True
@@ -47,7 +49,6 @@ class Contact():
         except (ValueError, AttributeError):
             return False
 
-
     @staticmethod
     def phone_normalize(phone):
         pure = re.sub(r"[^\d]", "", phone)
@@ -68,7 +69,6 @@ class Contact():
     def addr(self):
         return self._data['addr']
 
-
     @addr.setter
     def addr(self, addr):
         if self.addr_validator(addr):
@@ -78,17 +78,14 @@ class Contact():
     def email(self):
         return self._data['email']
 
-
     @email.setter
     def email(self, email):
         if self.email_validator(email):
             self._data['email'] = email
 
-
     @property
     def phone(self):
         return self._data['phone']
-
 
     @phone.setter
     def phone(self, phone):
@@ -96,11 +93,9 @@ class Contact():
         if self.email_validator(pure_phone):
             self._data['phone'] = phone
 
-
     @property
     def dob(self):
         return self._data['dob']
-
 
     @dob.setter
     def dob(self, dob):
@@ -113,16 +108,14 @@ class Contact():
             self._data['dob'] = dob
 
 
-
 class Contactbook():
 
     phonebook = []
     last_id = 0
 
-
     def __init__(self):
-#        self.storage_file = config.PHONEBOOK_STORAGE
-#        self.phonebook = self._load_from_file()
+        # self.storage_file = config.PHONEBOOK_STORAGE
+        # self.phonebook = self._load_from_file()
         pass
 
     def _load_from_file(self):
@@ -138,26 +131,29 @@ class Contactbook():
         with open(self.storage_file, 'wb') as f:
             pickle.dump(self.phonebook, f)
 
-
     def add_contact(self, name):
-        phone = yield("Enter phone: ")
-        email = yield("Enter email: ")
-        dob = yield("Enter date of birthday(YYYY.MM.DD): ")
-        addr = yield("Enter address: ")
-        contact = Contact(name=name, phone=phone, email=email, dob=dob, addr=addr)
+        phone = yield ("Enter phone: ")
+        email = yield ("Enter email: ")
+        dob = yield ("Enter date of birthday(YYYY.MM.DD): ")
+        addr = yield ("Enter address: ")
+        contact = Contact(
+            name=name,
+            phone=phone,
+            email=email,
+            dob=dob,
+            addr=addr
+            )
         self.phonebook.append(contact)
         self.last_id = len(self.phonebook)
         return "Contact added"
 
-
     def change_contact(self, name, phone):
-#TODO
+        # TODO
         if name in self.phonebook:
             self.phonebook[name] = phone
             return "OK"
         else:
             return f"Entry {name} not found"
-
 
     def get_contact(self, name):
         found = {}
@@ -169,54 +165,59 @@ class Contactbook():
 
         return f"Contact {name} not found"
 
-
     def all_contacts(self):
-#TODO
+        # TODO
         return self.phonebook
 
     def del_contact(self):
-#TODO
+        # TODO
         pass
-
 
     def search_contact(self, needle):
-#TODO
+        # TODO
         pass
 
-
     def get_birthdays(self, days: int) -> list[Contact]:
-        today = date.today()
-        list_of_birthday_people = []
+        upcoming_birthday_contacts = []
+        today = datetime.today().date()
+        end_date = today + timedelta(days=days)
 
         for contact in self.phonebook.values():
             dob = getattr(contact, "dob", None)
             if not dob:
                 continue
 
-            birthday_this_year = self._safe_birthday(today.year, dob.month, dob.day)
-            if birthday_this_year is None:
-                continue
+            birthday = self._next_birthday(dob, today)
 
-            next_birthday = (self._safe_birthday(today.year + 1, dob.month, dob.day)
-                             if birthday_this_year < today
-                             else birthday_this_year)
-            if next_birthday and (next_birthday - today).days <= days:
-                list_of_birthday_people.append(contact)
+            if today <= birthday < end_date:
+                upcoming_birthday_contacts.append(contact)
 
-        return list_of_birthday_people
-    
-    def _safe_birthday(self, year: int, month: int, day: int) -> date | None:
-        try:
-            return date(year, month, day)
-        except ValueError:
-            if month == 2 and day == 29:
-                return date(year, 2, 28)
-            return None
+        return upcoming_birthday_contacts
+
+    def _next_birthday(self, dob: date, today: date):
+        year = today.year
+        birthday = self._birthday_for_year(dob, year)
+
+        if birthday < today:
+            birthday = self._birthday_for_year(dob, year + 1)
+
+        return birthday
+
+    def _birthday_for_year(self, dob: date, year: int):
+        if dob.month == 2 and dob.day == 29 and not calendar.isleap(year):
+            return dob.replace(year=year, day=28)
+        return dob.replace(year=year)
 
     def print_contacts(self, contacts):
         txt = ""
         for id, contact in contacts.items():
-            txt += f"{contact.name}\t{contact.dob.strftime('%Y.%m.%d')}\t{contact.email}\t{contact.phone}\t{contact.addr}\n"
+            txt += (
+                f"{contact.name}\t"
+                f"{contact.dob.strftime('%Y.%m.%d')}\t"
+                f"{contact.email}\t"
+                f"{contact.phone}\t"
+                f"{contact.addr}\n"
+            )
             self.last_id = id
 
         return txt
