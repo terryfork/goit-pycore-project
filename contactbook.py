@@ -185,24 +185,30 @@ class Contactbook():
         return self.NOT_FOUND
 
     def edit_by_id(self, id):
-        # TODO
-        pass
+        contact = self.storage.get(id)
+        if not contact:
+            return f"No contact found with id: '{id}'"
+        return (yield from self.edit_contact(contact))
 
-    def edit_contact(self, name: str):
+    def edit_by_name(self, name):
         contacts = self.get_contact(name)
         if not contacts:
-            return f"No contact with name '{name}' found"
+            return f"No contact found with name '{name}'"
 
         contact = yield from self._handle_multi_choice(contacts)
+        if contact is None:
+            return
+        return (yield from self.edit_contact(contact=contact))
 
+    def edit_contact(self, contact: Contact):
         # Setting new phone number
         suggest = ""
         while True:
             phone = yield (
                 f"{suggest}Current phone: {contact.phone}\n"
-                "New phone [-skip]: "
+                "New phone: "
             )
-            if phone == "-skip":
+            if phone == "":
                 break
             if Contact.phone_validator(phone):
                 contact.phone = Contact.phone_normalize(phone)
@@ -214,9 +220,9 @@ class Contactbook():
         while True:
             email = yield (
                 f"{suggest}Current email: {contact.email}\n"
-                "New email [-skip]: "
+                "New email: "
             )
-            if email == "-skip":
+            if email == "":
                 break
             if Contact.email_validator(email):
                 contact.email = email
@@ -228,9 +234,9 @@ class Contactbook():
         while True:
             dob = yield (
                 f"{suggest}Current birthday: {contact.dob}\n"
-                "New birthday [-skip]: "
+                "New birthday: "
             )
-            if dob == "-skip":
+            if dob == "":
                 break
             if Contact.dob_validator(dob):
                 contact.dob = dob
@@ -243,9 +249,9 @@ class Contactbook():
         # Setting new address
         addr = yield (
             f"Current address: {contact.addr}\n"
-            "New address [-skip]: "
+            "New address: "
         )
-        if addr != "-skip":
+        if addr != "":
             contact.addr = addr
 
         self._save_to_file()
@@ -255,19 +261,20 @@ class Contactbook():
         if len(contacts) == 1:
             return next(iter(contacts.values()))
 
-        txt, id_map = self.print_contacts_numbered(contacts)
+        txt = self.print_contacts(contacts)
 
         suggest = ""
         while True:
-            choice = yield (
+            choice_id = yield (
                 f"{suggest}{txt}\n"
-                "Enter the id of the contact to update: "
+                "Enter the id of the contact to update [press enter to skip]: "
             )
             try:
-                choice = int(choice)
-                if choice in id_map:
-                    contact_id = id_map[choice]
-                    return self.storage[contact_id]
+                if choice_id == "":
+                    return None
+                choice_id = int(choice_id)
+                if choice_id in self.storage.keys():
+                    return self.storage[choice_id]
                 suggest = ("Invalid number. "
                            "Please enter one of the shown numbers.\n")
             except ValueError:

@@ -72,7 +72,7 @@ class BotCommands():
 
     @input_validator
     def edit_contact_handler(self, params):
-        return self.contactbook.edit_contact(params[0])
+        return self.contactbook.edit_by_name(params[0])
 
     def edit_contact_helper(self):
         return {
@@ -84,7 +84,6 @@ class BotCommands():
     def edit_contact_id_handler(self, params):
         return self.contactbook.edit_contact_id(params[0])
 
-
     def edit_contact_id_helper(self):
         return {
             'help': "edit existing contact by id",
@@ -94,7 +93,6 @@ class BotCommands():
     @input_validator
     def edit_last_contact_handler(self, params):
         return self.contactbook.edit_last_contact()
-
 
     def edit_last_contact_helper(self):
         return {
@@ -123,7 +121,6 @@ class BotCommands():
 
     def del_contact_id_handler(self, params):
         return self.contactbook.del_by_id(params[0])
-
 
     def del_contact_id_helper(self):
         return {
