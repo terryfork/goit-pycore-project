@@ -82,7 +82,11 @@ class BotCommands():
 
     @input_validator
     def edit_contact_id_handler(self, params):
-        return self.contactbook.edit_contact_id(params[0])
+        try:
+            id = int(params[0])
+        except ValueError:
+            return "Invalid id format"
+        return self.contactbook.edit_by_id(id)
 
     def edit_contact_id_helper(self):
         return {
