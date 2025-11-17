@@ -24,7 +24,7 @@ CLI-бот для управління контактами та нотатка�
 1. Клонуйте репозиторій:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/terryfork/goit-pycore-project.git
 cd goit-pycore-project
 ```
 
