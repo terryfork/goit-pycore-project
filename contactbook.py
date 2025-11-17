@@ -1,7 +1,7 @@
 import pickle
 from pickle import UnpicklingError
 from datetime import datetime, date, timedelta
-from calendar import calendar
+from calendar import isleap
 import re
 from colorama import Fore, Style
 from config import (
@@ -401,7 +401,7 @@ class Contactbook():
         return birthday
 
     def _birthday_for_year(self, dob: date, year: int):
-        if dob.month == 2 and dob.day == 29 and not calendar.isleap(year):
+        if dob.month == 2 and dob.day == 29 and not isleap(year):
             return dob.replace(year=year, day=28)
         return dob.replace(year=year)
 
