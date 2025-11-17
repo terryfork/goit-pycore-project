@@ -419,17 +419,3 @@ class Contactbook():
             self.last_id = id
 
         return txt
-
-    def print_contacts_numbered(self, contacts: dict[int, "Contact"]):
-        txt = ""
-        id_map = {}
-        for i, (contact_id, contact) in enumerate(contacts.items(), start=1):
-            txt += (
-                f"{i}. {contact.name}\t"
-                f"{contact.dob.strftime('%Y.%m.%d')}\t"
-                f"{contact.email}\t"
-                f"{contact.phone}\t"
-                f"{contact.addr}\n"
-            )
-            id_map[i] = contact_id
-        return txt, id_map
